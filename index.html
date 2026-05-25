@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小花生成长护航计划</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FDF8F3;
+            --soft-pink: #FFE4E1;
+            --sage: #C5D5C0;
+            --sage-dark: #9CB89C;
+            --warm-coral: #F4A896;
+            --warm-gold: #E8D4A8;
+            --text-primary: #4A4A4A;
+            --text-secondary: #7A7A7A;
+            --white: #FFFFFF;
+            --shadow-soft: 0 10px 40px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', 'Noto Serif SC', sans-serif;
+            background: var(--cream);
+            color: var(--text-primary);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        /* 有机形状背景 */
+        .organic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, var(--soft-pink), var(--warm-coral));
+            top: -200px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, var(--sage), var(--sage-dark));
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--warm-gold), var(--soft-pink));
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+            opacity: 0.2;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 30px) scale(1.02); }
+        }
+
+        /* 导航 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(253, 248, 243, 0.8);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo::before {
+            content: "🌱";
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--warm-coral);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* 首页英雄区 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 60px 80px;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 10px 24px;
+            background: var(--white);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: var(--warm-coral);
+            font-weight: 600;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-soft);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+            animation: fadeInUp 0.8s ease 0.1s both;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--warm-coral), var(--sage-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--sage-dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, var(--warm-coral), var(--sage-dark));
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s ease;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .cta-button::after {
+            content: "→";
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover::after {
+            transform: translateX(5px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 阶段卡片区 */
+        .stages-section {
+            padding: 100px 60px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .stage-card {
+            background: var(--white);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .stage-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--warm-coral), var(--sage-dark));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .stage-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stage-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stage-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .stage-card:hover .stage-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .stage-card:nth-child(1) .stage-icon { background: linear-gradient(135deg, #FFE4E1, #F4A896); }
+        .stage-card:nth-child(2) .stage-icon { background: linear-gradient(135deg, #E8F4E8, #C5D5C0); }
+        .stage-card:nth-child(3) .stage-icon { background: linear-gradient(135deg, #FFF8DC, #E8D4A8); }
+        .stage-card:nth-child(4) .stage-icon { background: linear-gradient(135deg, #E6E6FA, #D4C4E0); }
+        .stage-card:nth-child(5) .stage-icon { background: linear-gradient(135deg, #F0F8FF, #B8D4E3); }
+        .stage-card:nth-child(6) .stage-icon { background: linear-gradient(135deg, #FFF0F5, #E8B4C8); }
+
+        .stage-age {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stage-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .stage-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            line-height: 1.7;
+        }
+
+        .stage-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stage-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 特色功能区 */
+        .features-section {
+            padding: 100px 60px;
+            background: var(--white);
+            margin: 0 40px;
+            border-radius: 40px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-item {
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--cream);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 25px;
+            transition: all 0.4s ease;
+        }
+
+        .feature-item:hover .feature-icon {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, var(--soft-pink), var(--sage));
+        }
+
+        .feature-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* 页脚 */
+        footer {
+            padding: 60px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+
+        footer .heart {
+            color: var(--warm-coral);
+            animation: heartbeat 1.5s ease infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            
+            .hero h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 30px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hero {
+                padding: 100px 30px 60px;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .stages-section,
+            .features-section {
+                padding: 60px 30px;
+            }
+            
+            .features-section {
+                margin: 0 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 有机背景 -->
+    <div class="organic-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- 导航 -->
+    <nav>
+        <a href="index.html" class="logo">小花生成长护航</a>
+        <ul class="nav-links">
+            <li><a href="stage-0-3.html">0-3岁</a></li>
+            <li><a href="stage-3-6.html">3-6岁</a></li>
+            <li><a href="stage-6-10.html">6-10岁</a></li>
+            <li><a href="health.html">健康护航</a></li>
+            <li><a href="milestones.html">成长里程碑</a></li>
+        </ul>
+    </nav>
+
+    <!-- 首页英雄区 -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🌟 人生重大时刻记录</div>
+            <h1>小花生<br><span>成长护航计划</span></h1>
+            <p class="hero-subtitle">在她每个需要我的节点都不错过，为她保驾护航。从第一声啼哭到十岁少年，记录每一个珍贵瞬间。</p>
+            
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">年陪伴</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">168</div>
+                    <div class="stat-label">个里程碑</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">37</div>
+                    <div class="stat-label">项疫苗</div>
+                </div>
+            </div>
+            
+            <a href="#stages" class="cta-button">开启成长之旅</a>
+        </div>
+    </section>
+
+    <!-- 阶段卡片 -->
+    <section class="stages-section" id="stages">
+        <div class="section-header">
+            <h2>成长阶段</h2>
+            <p>每个阶段都有独特的使命和美好，让我们一起见证小花生的每一步成长</p>
+        </div>
+        
+        <div class="stages-grid">
+            <a href="stage-0-3.html" class="stage-card">
+                <div class="stage-icon">👶</div>
+                <div class="stage-age">0 - 3 岁</div>
+                <h3 class="stage-title">生命初建期</h3>
+                <p class="stage-desc">从第一声啼哭到蹒跚学步，建立安全感，探索世界，发展自我意识</p>
+                <div class="stage-meta">
+                    <span>📋 106项里程碑</span>
+                    <span>💉 25项疫苗</span>
+                </div>
+            </a>
+            
+            <a href="stage-3-6.html" class="stage-card">
+                <div class="stage-icon">🎨</div>
+                <div class="stage-age">3 - 6 岁</div>
+                <h3 class="stage-title">幼儿园时光</h3>
+                <p class="stage-desc">踏入幼儿园，社交拓展，能力培养，为小学做好准备</p>
+                <div class="stage-meta">
+                    <span>📋 50项里程碑</span>
+                    <span>🏫 幼小衔接</span>
+                </div>
+            </a>
+            
+            <a href="stage-6-10.html" class="stage-card">
+                <div class="stage-icon">📚</div>
+                <div class="stage-age">6 - 10 岁</div>
+                <h3 class="stage-title">小学生涯</h3>
+                <p class="stage-desc">成为小学生，学习习惯养成，独立性培养，迎接青春期</p>
+                <div class="stage-meta">
+                    <span>📋 42项里程碑</span>
+                    <span>🎯 小升初准备</span>
+                </div>
+            </a>
+            
+            <a href="health.html" class="stage-card">
+                <div class="stage-icon">💉</div>
+                <div class="stage-age">健康护航</div>
+                <h3 class="stage-title">疫苗与体检</h3>
+                <p class="stage-desc">完整的疫苗接种时间表和健康体检计划，守护小花生的身体健康</p>
+                <div class="stage-meta">
+                    <span>💉 37项疫苗</span>
+                    <span>🏥 17项体检</span>
+                </div>
+            </a>
+            
+            <a href="milestones.html" class="stage-card">
+                <div class="stage-icon">🎂</div>
+                <div class="stage-age">成长仪式</div>
+                <h3 class="stage-title">重要时刻</h3>
+                <p class="stage-desc">每一个生日、每一个毕业、每一个值得纪念的瞬间，都值得被铭记</p>
+                <div class="stage-meta">
+                    <span>🎉 17个仪式</span>
+                    <span>📸 成长记录</span>
+                </div>
+            </a>
+            
+            <a href="#" class="stage-card" onclick="alert('功能开发中，敬请期待！')">
+                <div class="stage-icon">📖</div>
+                <div class="stage-age">成长日记</div>
+                <h3 class="stage-title">记录点滴</h3>
+                <p class="stage-desc">照片、视频、文字，记录小花生的每一个第一次和珍贵瞬间</p>
+                <div class="stage-meta">
+                    <span>📝 随时记录</span>
+                    <span>☁️ 云端保存</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 特色功能 -->
+    <section class="features-section">
+        <div class="section-header">
+            <h2>三大护航维度</h2>
+            <p>全方位守护小花生的健康成长</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">🏥</div>
+                <h3 class="feature-title">健康医疗</h3>
+                <p class="feature-desc">疫苗接种提醒、定期体检安排、生长发育监测，为健康保驾护航</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">🧠</div>
+                <h3 class="feature-title">教育启蒙</h3>
+                <p class="feature-desc">认知发展、学习能力、兴趣培养，在每个关键期给予正确引导</p>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">💝</div>
+                <h3 class="feature-title">情感陪伴</h3>
+                <p class="feature-desc">亲子时光、成长仪式、美好回忆，用爱陪伴每一个重要时刻</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>Made with <span class="heart">❤️</span> for 小花生 | 在她每个需要我的节点都不错过</p>
+    </footer>
+
+    <script>
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stage-card, .feature-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.style.boxShadow = '0 2px 20px rgba(0,0,0,0.05)';
+            } else {
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
