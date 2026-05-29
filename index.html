@@ -746,7 +746,10 @@
         <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">信息来源：中国CDC、国家卫健委、美国儿科学会(AAP)、WHO等权威机构</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-sync.js"></script>
     <script src="milestones-data.js"></script>
     <script src="growth-guardian.js"></script>
     <script>
@@ -757,6 +760,9 @@
                 alert('请先进入任一成长阶段页面后再下载');
             }
         }
+
+        // Init auth UI on index page
+        if (typeof initGrowthGuardian === 'function') initGrowthGuardian();
 
         // 滚动动画
         const observerOptions = {

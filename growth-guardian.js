@@ -55,10 +55,27 @@
   // ==================== Check Toggle ====================
 
   window.toggleCheck = function(element) {
-    element.classList.toggle('checked');
     var id = element.getAttribute('data-id');
     if (!id) return;
+
+    if (typeof isSupabaseLoggedIn === 'function' && !isSupabaseLoggedIn()) {
+      element.classList.remove('checked');
+      if (typeof showAuthModal === 'function') {
+        setPendingToggle(function() {
+          element.classList.add('checked');
+          doToggle(element, id, true);
+        });
+        showAuthModal(true);
+      }
+      return;
+    }
+
+    element.classList.toggle('checked');
     var isChecked = element.classList.contains('checked');
+    doToggle(element, id, isChecked);
+  };
+
+  function doToggle(element, id, isChecked) {
     var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
     if (isChecked) {
       if (checkedItems.indexOf(id) === -1) checkedItems.push(id);
@@ -66,9 +83,25 @@
       checkedItems = checkedItems.filter(function(item) { return item !== id; });
     }
     localStorage.setItem('checkedItems', JSON.stringify(checkedItems));
+
+    var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
+    var phone = (typeof getCurrentPhoneRaw === 'function') ? getCurrentPhoneRaw() : '';
+    editorInfo[id] = { phone: phone, updated_at: new Date().toISOString(), checked: isChecked };
+    localStorage.setItem('gg_editor_info', JSON.stringify(editorInfo));
+
+    var editorEl = element.closest('.milestone-card');
+    if (editorEl) {
+      var eSpan = editorEl.querySelector('.milestone-editor');
+      if (eSpan && phone) {
+        eSpan.textContent = (typeof maskPhone === 'function' ? maskPhone(phone) : phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(editorInfo[id].updated_at) : '');
+        eSpan.style.display = '';
+      }
+    }
+
     updateProgress();
     encodeCheckedToHash();
-  };
+    if (typeof supabaseToggle === 'function') supabaseToggle(id, isChecked);
+  }
 
   // ==================== Restore State ====================
 
@@ -80,9 +113,24 @@
     var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
     var checkedSet = {};
     checkedItems.forEach(function(id) { checkedSet[id] = true; });
+    var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
     document.querySelectorAll('.milestone-check[data-id]').forEach(function(el) {
-      if (checkedSet[el.getAttribute('data-id')]) {
+      var mid = el.getAttribute('data-id');
+      if (checkedSet[mid]) {
         el.classList.add('checked');
+      }
+      var card = el.closest('.milestone-card');
+      if (card) {
+        var eSpan = card.querySelector('.milestone-editor');
+        if (eSpan) {
+          var info = editorInfo[mid];
+          if (info && info.phone && info.updated_at) {
+            eSpan.textContent = (typeof maskPhone === 'function' ? maskPhone(info.phone) : info.phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(info.updated_at) : '');
+            eSpan.style.display = '';
+          } else {
+            eSpan.style.display = 'none';
+          }
+        }
       }
     });
     updateProgress();
@@ -223,6 +271,7 @@
     var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
     var checkedSet = {};
     checkedItems.forEach(function(id) { checkedSet[id] = true; });
+    var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
 
     // Overview sheet
     var overviewData = [
@@ -244,44 +293,56 @@
       var stage = MILESTONES_DATA[key];
       if (!stage) return;
       var headerCol = (key === '0-1' || key === '1-2' || key === '2-3') ? '月龄' : '时间';
-      var sheetData = [[], [headerCol, '类别', '关键事项', '具体内容', '建议时间', '完成状态', '备注']];
+      var sheetData = [[], [headerCol, '类别', '关键事项', '具体内容', '建议时间', '完成状态', '备注', '手机号', '最后编辑时间']];
       stage.items.forEach(function(item) {
         var status = checkedSet[item.id] ? '✅ 已完成' : '';
-        sheetData.push([item.time, item.category, item.title, item.desc, item.suggestedTime, status, item.note]);
+        var eInfo = editorInfo[item.id] || {};
+        var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+        var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
+        sheetData.push([item.time, item.category, item.title, item.desc, item.suggestedTime, status, item.note, ePhone, eTime]);
       });
       var ws = XLSX.utils.aoa_to_sheet(sheetData);
-      ws['!cols'] = [{wch:10},{wch:14},{wch:22},{wch:40},{wch:14},{wch:10},{wch:14}];
+      ws['!cols'] = [{wch:10},{wch:14},{wch:22},{wch:40},{wch:14},{wch:10},{wch:14},{wch:14},{wch:18}];
       XLSX.utils.book_append_sheet(wb, ws, stage.sheetName.substring(0, 31));
     });
 
     // Vaccine sheet
-    var vaccineData = [[], ['年龄', '疫苗名称', '剂次', '接种时间', '免费/自费', '重要性', '备注']];
+    var vaccineData = [[], ['年龄', '疫苗名称', '剂次', '接种时间', '免费/自费', '重要性', '备注', '手机号', '最后编辑时间']];
     MILESTONES_DATA.vaccine.items.forEach(function(item) {
       var status = checkedSet[item.id] ? '✅ 已完成' : '';
-      vaccineData.push([item.age, item.name, item.dose, item.time, item.cost, item.importance, item.note]);
+      var eInfo = editorInfo[item.id] || {};
+      var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+      var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
+      vaccineData.push([item.age, item.name, item.dose, item.time, item.cost, item.importance, item.note, ePhone, eTime]);
     });
     var wsVaccine = XLSX.utils.aoa_to_sheet(vaccineData);
-    wsVaccine['!cols'] = [{wch:10},{wch:18},{wch:10},{wch:18},{wch:10},{wch:8},{wch:14}];
+    wsVaccine['!cols'] = [{wch:10},{wch:18},{wch:10},{wch:18},{wch:10},{wch:8},{wch:14},{wch:14},{wch:18}];
     XLSX.utils.book_append_sheet(wb, wsVaccine, '疫苗接种时间表');
 
     // Health checkup sheet
-    var healthData = [[], ['年龄', '体检项目', '检查内容', '重要性', '完成状态', '备注']];
+    var healthData = [[], ['年龄', '体检项目', '检查内容', '重要性', '完成状态', '备注', '手机号', '最后编辑时间']];
     MILESTONES_DATA.health.items.forEach(function(item) {
       var status = checkedSet[item.id] ? '✅ 已完成' : '';
-      healthData.push([item.age, item.name, item.content, item.importance, status, item.note]);
+      var eInfo = editorInfo[item.id] || {};
+      var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+      var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
+      healthData.push([item.age, item.name, item.content, item.importance, status, item.note, ePhone, eTime]);
     });
     var wsHealth = XLSX.utils.aoa_to_sheet(healthData);
-    wsHealth['!cols'] = [{wch:10},{wch:18},{wch:35},{wch:8},{wch:10},{wch:14}];
+    wsHealth['!cols'] = [{wch:10},{wch:18},{wch:35},{wch:8},{wch:10},{wch:14},{wch:14},{wch:18}];
     XLSX.utils.book_append_sheet(wb, wsHealth, '体检时间表');
 
     // Ceremony sheet
-    var ceremonyData = [[], ['年龄', '仪式名称', '仪式内容', '建议形式', '完成状态', '备注']];
+    var ceremonyData = [[], ['年龄', '仪式名称', '仪式内容', '建议形式', '完成状态', '备注', '手机号', '最后编辑时间']];
     MILESTONES_DATA.ceremony.items.forEach(function(item) {
       var status = checkedSet[item.id] ? '✅ 已完成' : '';
-      ceremonyData.push([item.age, item.name, item.content, item.form, status, item.note]);
+      var eInfo = editorInfo[item.id] || {};
+      var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+      var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
+      ceremonyData.push([item.age, item.name, item.content, item.form, status, item.note, ePhone, eTime]);
     });
     var wsCeremony = XLSX.utils.aoa_to_sheet(ceremonyData);
-    wsCeremony['!cols'] = [{wch:10},{wch:16},{wch:30},{wch:18},{wch:10},{wch:14}];
+    wsCeremony['!cols'] = [{wch:10},{wch:16},{wch:30},{wch:18},{wch:10},{wch:14},{wch:14},{wch:18}];
     XLSX.utils.book_append_sheet(wb, wsCeremony, '重要仪式清单');
 
     // Instructions sheet
@@ -380,6 +441,7 @@
         html += '<div class="milestone-meta">';
         html += '<span class="milestone-time">📅 ' + item.suggestedTime + '</span>';
         if (item.note) html += '<span class="milestone-note">' + item.note + '</span>';
+        html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span>';
         html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
         html += '</div>';
         html += '</div>';
@@ -406,6 +468,7 @@
       html += '<h3 class="milestone-title">' + item.name + ' ' + item.dose + '</h3>';
       html += '<p class="milestone-desc">' + item.age + ' | ' + item.time + '</p>';
       if (item.note) html += '<div class="milestone-meta"><span class="milestone-note">' + item.note + '</span></div>';
+      html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span>';
       html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
       html += '</div>';
     });
@@ -419,7 +482,8 @@
       html += '<div class="milestone-category">' + item.importance + '</div>';
       html += '<h3 class="milestone-title">' + item.name + '</h3>';
       html += '<p class="milestone-desc">' + item.content + '</p>';
-      html += '<div class="milestone-meta"><span class="milestone-time">' + item.age + '</span></div>';
+      html += '<div class="milestone-meta"><span class="milestone-time">' + item.age + '</span>';
+      html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span></div>';
       html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
       html += '</div>';
     });
@@ -444,6 +508,7 @@
       html += '<div class="milestone-meta">';
       html += '<span class="milestone-time">' + item.form + '</span>';
       if (item.note) html += '<span class="milestone-note">' + item.note + '</span>';
+      html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span>';
       html += '</div>';
       html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
       html += '</div>';
@@ -470,10 +535,65 @@
     });
   };
 
+  // ==================== Auth Modal & CSS ====================
+
+  window.injectAuthUI = function() {
+    var style = document.createElement('style');
+    style.textContent = '\
+.auth-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:10001;align-items:center;justify-content:center;}\
+.auth-card{background:#fff;border-radius:24px;padding:40px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.15);text-align:center;}\
+.auth-card h2{font-family:"Noto Serif SC",serif;margin-bottom:10px;font-size:1.5rem;}\
+.auth-card p{color:#7A7A7A;font-size:0.9rem;margin-bottom:20px;}\
+.auth-card input{width:100%;padding:14px 18px;border:2px solid #E8E8E8;border-radius:14px;font-size:1rem;font-family:Nunito,sans-serif;margin-bottom:12px;outline:none;transition:border-color 0.3s;}\
+.auth-card input:focus{border-color:#9CB89C;}\
+.auth-card button{width:100%;padding:14px;background:linear-gradient(135deg,#9CB89C,#C5D5C0);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:700;font-family:Nunito,sans-serif;cursor:pointer;transition:transform 0.2s;}\
+.auth-card button:hover{transform:translateY(-2px);}\
+#auth-message{font-size:0.85rem;min-height:20px;margin-top:8px;}\
+.auth-hint{font-size:0.8rem;color:#7A7A7A;margin-top:12px;}\
+#auth-status{position:fixed;top:72px;right:60px;z-index:999;font-size:0.85rem;font-weight:600;}\
+#auth-status .auth-phone{color:#9CB89C;}\
+#auth-status .auth-logout{color:#D47373;text-decoration:none;margin-left:8px;font-weight:600;}\
+#auth-status .auth-login-link{color:#9CB89C;text-decoration:none;font-weight:700;cursor:pointer;}\
+@media(max-width:768px){#auth-status{right:30px;top:65px;font-size:0.8rem;}}\
+';
+    document.head.appendChild(style);
+
+    var modal = document.createElement('div');
+    modal.id = 'auth-modal';
+    modal.className = 'auth-overlay';
+    modal.innerHTML = '<div class="auth-card">\
+<h2>🔐 身份验证</h2>\
+<p>需要验证身份才能编辑打卡</p>\
+<input type="tel" id="auth-phone" placeholder="手机号（11位数字）" maxlength="11">\
+<input type="password" id="auth-pin" placeholder="PIN码（至少6位）" maxlength="20">\
+<button onclick="handleAuthSubmit()">验证</button>\
+<div id="auth-message"></div>\
+<p class="auth-hint">首次输入自动注册</p>\
+</div>';
+    document.body.appendChild(modal);
+
+    var statusDiv = document.createElement('div');
+    statusDiv.id = 'auth-status';
+    document.body.appendChild(statusDiv);
+
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) hideAuthModal();
+    });
+
+    var pinInput = document.getElementById('auth-pin');
+    if (pinInput) {
+      pinInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') handleAuthSubmit();
+      });
+    }
+  };
+
   // ==================== Init ====================
 
   window.initGrowthGuardian = function() {
     migrateLegacyCheckedItems();
+    injectAuthUI();
+    if (typeof initSupabase === 'function') initSupabase();
   };
 
 })();
