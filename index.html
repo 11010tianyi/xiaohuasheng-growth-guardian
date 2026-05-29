@@ -673,6 +673,26 @@
         </div>
     </section>
 
+    <!-- Excel 下载区 -->
+    <section style="padding: 100px 60px; max-width: 1400px; margin: 0 auto;">
+        <div class="section-header">
+            <h2>📥 下载护航计划</h2>
+            <p>下载完整的 Excel 护航计划，离线追踪每一个里程碑</p>
+        </div>
+        <div style="text-align: center;">
+            <div style="background: var(--white); border-radius: 30px; padding: 50px; box-shadow: var(--shadow-soft); max-width: 600px; margin: 0 auto;">
+                <div style="font-size: 4rem; margin-bottom: 20px;">📊</div>
+                <h3 style="font-family: 'Noto Serif SC', serif; font-size: 1.5rem; margin-bottom: 15px;">小花生成长护航计划.xlsx</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 10px;">14 个工作表 · 331 条数据 · 疫苗/体检/仪式全覆盖</p>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 30px;">"完成状态"列与网页打勾实时同步</p>
+                <button onclick="handleIndexDownload()" style="display: inline-flex; align-items: center; gap: 10px; padding: 16px 36px; background: linear-gradient(135deg, var(--warm-coral), var(--sage-dark)); color: var(--white); border: none; border-radius: 50px; font-family: 'Nunito', sans-serif; font-size: 1.05rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-soft); transition: all 0.3s ease;">
+                    📥 下载 Excel 文件
+                </button>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 15px; opacity: 0.7;">首次下载需加载约 350KB 组件，后续即点即下</p>
+            </div>
+        </div>
+    </section>
+
     <!-- 权威来源说明 -->
     <section class="sources-section" style="padding: 80px 60px; background: var(--white); margin: 0 40px; border-radius: 40px; box-shadow: var(--shadow-soft);">
         <div class="section-header">
@@ -726,7 +746,18 @@
         <p style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;">信息来源：中国CDC、国家卫健委、美国儿科学会(AAP)、WHO等权威机构</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="milestones-data.js"></script>
+    <script src="growth-guardian.js"></script>
     <script>
+        function handleIndexDownload() {
+            if (typeof generateExcel === 'function') {
+                generateExcel();
+            } else {
+                alert('请先进入任一成长阶段页面后再下载');
+            }
+        }
+
         // 滚动动画
         const observerOptions = {
             threshold: 0.1,
