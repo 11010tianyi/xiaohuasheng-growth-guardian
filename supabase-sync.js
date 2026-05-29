@@ -251,6 +251,10 @@
 
   function formatTime(ts) {
     if (!ts) return '';
+    // Supabase TIMESTAMPTZ returns UTC; ensure timezone suffix so JS parses as UTC
+    if (typeof ts === 'string' && ts.length > 0 && !ts.endsWith('Z') && !/[+\-]\d{2}:\d{2}$/.test(ts) && !/[+\-]\d{4}$/.test(ts)) {
+      ts = ts + '+00:00';
+    }
     var d = new Date(ts);
     var y = d.getFullYear();
     var m = String(d.getMonth() + 1).padStart(2, '0');
