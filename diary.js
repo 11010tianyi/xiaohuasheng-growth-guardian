@@ -1,4 +1,4 @@
-/* 小花生成长护航计划 - 记录点滴 日记模块 */
+/* 小花生成长护航计划 - 记录点滴 日记模块（家人共享版） */
 
 (function() {
   'use strict';
@@ -9,32 +9,6 @@
   var _currentEntry = null;
   var _currentPage = 0;
   var PAGE_SIZE = 20;
-
-  // ==================== Encryption Helpers ====================
-
-  async function encryptContent(plaintext, key) {
-    if (!key) throw new Error('加密密钥未初始化');
-    var iv = crypto.getRandomValues(new Uint8Array(12));
-    var encoded = new TextEncoder().encode(plaintext);
-    var ciphertext = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv: iv }, key, encoded
-    );
-    return JSON.stringify({
-      iv: arrayToBase64(iv),
-      data: arrayToBase64(ciphertext)
-    });
-  }
-
-  async function decryptContent(encryptedJson, key) {
-    if (!key) throw new Error('加密密钥未初始化');
-    var encrypted = JSON.parse(encryptedJson);
-    var iv = base64ToArray(encrypted.iv);
-    var data = base64ToArray(encrypted.data);
-    var decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv }, key, data
-    );
-    return new TextDecoder().decode(decrypted);
-  }
 
   // ==================== Photo Handling ====================
 
@@ -120,10 +94,6 @@
     } catch(e) { return null; }
   }
 
-  function getEncryptionKey() {
-    return typeof window.getEncryptionKey === 'function' ? window.getEncryptionKey() : null;
-  }
-
   function getSupabaseClient() {
     return typeof window._getSupabaseInstance === 'function' ? window._getSupabaseInstance() : null;
   }
@@ -136,80 +106,45 @@
     }
   }
 
-  function arrayToBase64(arr) {
-    if (typeof window.arrayToBase64 === 'function') return window.arrayToBase64(arr);
-    var binary = '';
-    var bytes = new Uint8Array(arr);
-    for (var i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
-
-  function base64ToArray(base64) {
-    if (typeof window.base64ToArray === 'function') return window.base64ToArray(base64);
-    var binary = atob(base64);
-    var bytes = new Uint8Array(binary.length);
-    for (var i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return bytes;
-  }
-
   // ==================== CRUD ====================
 
   async function saveEntry(entryData) {
-    var key = getEncryptionKey();
-    if (!key) {
-      showToastMsg('加密密钥未初始化，请重新登录');
-      return { success: false, message: '加密密钥未初始化' };
-    }
-
     var supabase = getSupabaseClient();
-    if (!supabase) return { success: false, message: 'Supabase 未配置' };
+    if (!supabase) { console.error('[Diary] saveEntry: supabase 为空'); return { success: false, message: 'Supabase 未配置' }; }
     var session = getLocalSession();
-    if (!session) return { success: false, message: '请先登录' };
+    if (!session) { console.error('[Diary] saveEntry: session 为空'); return { success: false, message: '请先登录' }; }
 
-    var encryptedContent = '';
-    var contentIv = '';
-    if (entryData.content && entryData.content.trim()) {
-      var encrypted = await encryptContent(entryData.content, key);
-      var parsed = JSON.parse(encrypted);
-      encryptedContent = parsed.data;
-      contentIv = parsed.iv;
-    }
+    var rpcName = entryData.id ? 'update_diary_entry' : 'create_diary_entry';
+    var params = entryData.id ? {
+      p_entry_id: entryData.id,
+      p_phone: session.phone,
+      p_pin_hash: session.pinHash,
+      p_content: entryData.content || '',
+      p_photo_paths: entryData.photoPaths || [],
+      p_mood: entryData.mood || '',
+      p_tags: entryData.tags || []
+    } : {
+      p_phone: session.phone,
+      p_pin_hash: session.pinHash,
+      p_content: entryData.content || '',
+      p_photo_paths: entryData.photoPaths || [],
+      p_entry_date: entryData.entryDate,
+      p_mood: entryData.mood || '',
+      p_tags: entryData.tags || []
+    };
 
-    if (entryData.id) {
-      var result = await supabase.rpc('update_diary_entry', {
-        p_entry_id: entryData.id,
-        p_phone: session.phone,
-        p_pin_hash: session.pinHash,
-        p_content_encrypted: encryptedContent,
-        p_content_iv: contentIv,
-        p_photo_paths: entryData.photoPaths || [],
-        p_mood: entryData.mood || '',
-        p_tags: entryData.tags || []
-      });
-      return result.data || { success: false, message: '更新失败' };
-    } else {
-      var result = await supabase.rpc('create_diary_entry', {
-        p_phone: session.phone,
-        p_pin_hash: session.pinHash,
-        p_content_encrypted: encryptedContent,
-        p_content_iv: contentIv,
-        p_photo_paths: entryData.photoPaths || [],
-        p_entry_date: entryData.entryDate,
-        p_mood: entryData.mood || '',
-        p_tags: entryData.tags || []
-      });
-      return result.data || { success: false, message: '保存失败' };
+    console.log('[Diary] saveEntry RPC:', rpcName, 'params:', JSON.stringify(params));
+    var result = await supabase.rpc(rpcName, params);
+    console.log('[Diary] saveEntry result:', JSON.stringify(result));
+
+    if (result.error) {
+      console.error('[Diary] saveEntry error:', result.error);
+      return { success: false, message: result.error.message || 'RPC 调用失败' };
     }
+    return result.data || { success: false, message: '保存失败' };
   }
 
   async function loadEntries(offset, limit) {
-    var key = getEncryptionKey();
-    if (!key) return [];
-
     var supabase = getSupabaseClient();
     if (!supabase) return [];
     var session = getLocalSession();
@@ -225,33 +160,19 @@
 
       if (!result.data || !result.data.success || !result.data.entries) return [];
 
-      var decrypted = [];
-      for (var i = 0; i < result.data.entries.length; i++) {
-        var row = result.data.entries[i];
-        var content = '';
-        if (row.content_encrypted && row.content_iv) {
-          try {
-            content = await decryptContent(
-              JSON.stringify({ iv: row.content_iv, data: row.content_encrypted }),
-              key
-            );
-          } catch(e) {
-            content = '[解密失败]';
-            console.error('[Diary] 解密失败:', e);
-          }
-        }
-        decrypted.push({
+      return result.data.entries.map(function(row) {
+        return {
           id: row.id,
-          content: content,
+          phone: row.phone,
+          content: row.content || '',
           photoPaths: row.photo_paths || [],
           entryDate: row.entry_date,
           mood: row.mood,
           tags: row.tags || [],
           createdAt: row.created_at,
           updatedAt: row.updated_at
-        });
-      }
-      return decrypted;
+        };
+      });
     } catch(e) {
       console.error('[Diary] 加载失败:', e);
       return [];
@@ -291,56 +212,10 @@
     if (!container) return;
 
     container.innerHTML = '';
-
-    var key = getEncryptionKey();
-    if (!key) {
-      renderKeyPrompt(container);
-      return;
-    }
-
     renderEditor(container);
     renderList(container);
     loadAndDisplay(container);
   };
-
-  function renderKeyPrompt(container) {
-    var prompt = document.createElement('div');
-    prompt.className = 'diary-key-prompt';
-    prompt.innerHTML =
-      '<div class="diary-key-card">' +
-        '<h3>🔐 需要验证身份以解密日记</h3>' +
-        '<p>日记内容经过端到端加密，需要输入 PIN 码才能解密阅读</p>' +
-        '<div class="diary-key-form">' +
-          '<input type="password" id="diary-pin-input" placeholder="请输入 PIN 码" autocomplete="off">' +
-          '<button class="diary-key-btn" id="diary-key-submit">解密</button>' +
-        '</div>' +
-        '<p class="diary-key-hint" id="diary-key-message"></p>' +
-      '</div>';
-    container.appendChild(prompt);
-
-    document.getElementById('diary-key-submit').addEventListener('click', async function() {
-      var pin = document.getElementById('diary-pin-input').value;
-      if (!pin || pin.length < 6) {
-        document.getElementById('diary-key-message').textContent = 'PIN码至少6位';
-        document.getElementById('diary-key-message').style.color = '#D47373';
-        return;
-      }
-      var success = await window.rederiveEncryptionKey(pin);
-      if (success) {
-        container.innerHTML = '';
-        renderEditor(container);
-        renderList(container);
-        loadAndDisplay(container);
-      } else {
-        document.getElementById('diary-key-message').textContent = 'PIN码错误或验证失败';
-        document.getElementById('diary-key-message').style.color = '#D47373';
-      }
-    });
-
-    document.getElementById('diary-pin-input').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') document.getElementById('diary-key-submit').click();
-    });
-  }
 
   function renderEditor(container) {
     var today = new Date();
@@ -364,16 +239,19 @@
             return '<span class="tag-option" data-tag="' + t + '">' + t + '</span>';
           }).join('') +
         '</div>' +
-        '<textarea id="diary-content" class="diary-textarea" placeholder="写下今天的点滴..."></textarea>' +
+        '<textarea id="diary-content" class="diary-textarea" placeholder="写下今天的点滴…（支持 Markdown 格式）"></textarea>' +
+        '<div id="diary-preview" class="diary-preview diary-detail-content" style="display:none"></div>' +
+        '<div class="diary-editor-actions">' +
+          '<button class="diary-preview-toggle" id="diary-preview-btn">👁 预览</button>' +
+          '<div style="flex:1"></div>' +
+          '<button class="diary-save-btn" id="diary-save-btn">保存</button>' +
+          '<button class="diary-cancel-btn" id="diary-cancel-btn" style="display:none">取消</button>' +
+        '</div>' +
         '<div class="diary-photo-area" id="diary-photos">' +
           '<label class="diary-photo-add" for="diary-photo-input">' +
             '<span>📷</span><small>添加照片</small>' +
           '</label>' +
           '<input type="file" id="diary-photo-input" accept="image/*" multiple style="display:none">' +
-        '</div>' +
-        '<div class="diary-editor-actions">' +
-          '<button class="diary-save-btn" id="diary-save-btn">保存</button>' +
-          '<button class="diary-cancel-btn" id="diary-cancel-btn" style="display:none">取消</button>' +
         '</div>' +
       '</div>';
     container.appendChild(editor);
@@ -426,6 +304,35 @@
     document.getElementById('diary-cancel-btn').addEventListener('click', function() {
       resetEditor();
     });
+
+    document.getElementById('diary-preview-btn').addEventListener('click', function() {
+      togglePreview();
+    });
+
+    document.getElementById('diary-content').addEventListener('input', function() {
+      var preview = document.getElementById('diary-preview');
+      if (preview && preview.style.display !== 'none') {
+        preview.innerHTML = renderMarkdown(this.value);
+      }
+    });
+  }
+
+  function togglePreview() {
+    var textarea = document.getElementById('diary-content');
+    var preview = document.getElementById('diary-preview');
+    var btn = document.getElementById('diary-preview-btn');
+    if (!textarea || !preview || !btn) return;
+
+    if (preview.style.display === 'none') {
+      preview.innerHTML = renderMarkdown(textarea.value);
+      textarea.style.display = 'none';
+      preview.style.display = 'block';
+      btn.textContent = '✏️ 编辑';
+    } else {
+      textarea.style.display = 'block';
+      preview.style.display = 'none';
+      btn.textContent = '👁 预览';
+    }
   }
 
   function handlePhotoSelect(files) {
@@ -468,41 +375,49 @@
     saveBtn.textContent = '保存中...';
     saveBtn.disabled = true;
 
-    var allPhotoPaths = _uploadedPhotoPaths.slice();
-    var failedPhotos = 0;
-    for (var i = 0; i < _pendingPhotos.length; i++) {
-      var path = await uploadPhoto(_pendingPhotos[i]);
-      if (path) allPhotoPaths.push(path);
-      else failedPhotos++;
-    }
-
-    var entryData = {
-      content: content,
-      entryDate: entryDate,
-      mood: _selectedMood,
-      tags: _selectedTags,
-      photoPaths: allPhotoPaths
-    };
-
-    if (_currentEntry && _currentEntry.id) {
-      entryData.id = _currentEntry.id;
-    }
-
-    var result = await saveEntry(entryData);
-    if (result.success) {
-      showToastMsg('保存成功');
-      if (failedPhotos > 0) {
-        showToastMsg(failedPhotos + '张照片上传失败');
+    try {
+      var allPhotoPaths = _uploadedPhotoPaths.slice();
+      var failedPhotos = 0;
+      for (var i = 0; i < _pendingPhotos.length; i++) {
+        var path = await uploadPhoto(_pendingPhotos[i]);
+        if (path) allPhotoPaths.push(path);
+        else failedPhotos++;
       }
-      resetEditor();
-      var listContainer = document.getElementById('diary-list');
-      if (listContainer) loadAndDisplay(listContainer.parentElement);
-    } else {
-      showToastMsg(result.message || '保存失败');
-    }
 
-    saveBtn.textContent = '保存';
-    saveBtn.disabled = false;
+      var entryData = {
+        content: content,
+        entryDate: entryDate,
+        mood: _selectedMood,
+        tags: _selectedTags,
+        photoPaths: allPhotoPaths
+      };
+
+      if (_currentEntry && _currentEntry.id) {
+        entryData.id = _currentEntry.id;
+      }
+
+      console.log('[Diary] handleSave: calling saveEntry...');
+      var result = await saveEntry(entryData);
+      console.log('[Diary] handleSave: saveEntry returned', JSON.stringify(result));
+
+      if (result.success) {
+        showToastMsg('保存成功');
+        if (failedPhotos > 0) {
+          showToastMsg(failedPhotos + '张照片上传失败');
+        }
+        resetEditor();
+        var listContainer = document.getElementById('diary-list');
+        if (listContainer) loadAndDisplay(listContainer.parentElement);
+      } else {
+        showToastMsg(result.message || '保存失败');
+      }
+    } catch(e) {
+      console.error('[Diary] handleSave 异常:', e);
+      showToastMsg('保存失败：' + (e.message || '请检查网络'));
+    } finally {
+      saveBtn.textContent = '保存';
+      saveBtn.disabled = false;
+    }
   }
 
   function resetEditor() {
@@ -514,6 +429,12 @@
 
     var contentEl = document.getElementById('diary-content');
     if (contentEl) contentEl.value = '';
+
+    var preview = document.getElementById('diary-preview');
+    if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+    var previewBtn = document.getElementById('diary-preview-btn');
+    if (previewBtn) previewBtn.textContent = '👁 预览';
+    if (contentEl) contentEl.style.display = 'block';
 
     var moodOptions = document.querySelectorAll('.mood-option');
     moodOptions.forEach(function(m) { m.classList.remove('selected'); });
@@ -553,6 +474,7 @@
 
     if (_entries.length === 0) {
       listEl.innerHTML = '<div class="diary-empty">还没有日记，写下第一条吧 ✨</div>';
+      renderPhotoWall(_entries);
       return;
     }
 
@@ -567,6 +489,57 @@
     }
 
     listEl.appendChild(grid);
+    renderPhotoWall(_entries);
+  }
+
+  async function renderPhotoWall(entries) {
+    var leftWall = document.getElementById('photo-wall-left');
+    var rightWall = document.getElementById('photo-wall-right');
+    var leftTrack = document.getElementById('photo-wall-track-left');
+    var rightTrack = document.getElementById('photo-wall-track-right');
+    if (!leftWall || !rightWall || !leftTrack || !rightTrack) return;
+
+    var photos = [];
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      if (!entry.photoPaths || entry.photoPaths.length === 0) continue;
+      for (var j = 0; j < entry.photoPaths.length; j++) {
+        photos.push({ path: entry.photoPaths[j], phone: entry.phone, updatedAt: entry.updatedAt, createdAt: entry.createdAt });
+      }
+    }
+
+    if (photos.length === 0) {
+      leftWall.style.display = 'none';
+      rightWall.style.display = 'none';
+      return;
+    }
+
+    var leftHtml = '';
+    var rightHtml = '';
+
+    for (var k = 0; k < photos.length; k++) {
+      var p = photos[k];
+      var url = await getPhotoUrl(p.path);
+      if (!url) continue;
+      var author = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(p.phone) : '';
+      var timeSource = p.updatedAt || p.createdAt;
+      var timeStr = (timeSource && typeof formatEditorTime === 'function') ? formatEditorTime(timeSource) : '';
+      var item = '<div class="photo-wall-item" onclick="zoomPhoto(\'' + url.replace(/'/g, "\\'") + '\',\'' + escapeHtml(author).replace(/'/g, "\\'") + '\',\'' + timeStr + '\')">' +
+        '<img class="photo-wall-thumb" src="' + url + '" loading="lazy" alt="日记照片">' +
+        '<div class="photo-wall-meta"><span class="photo-wall-author">' + escapeHtml(author) + '</span> ' + timeStr + '</div>' +
+      '</div>';
+      if (k % 2 === 0) { leftHtml += item; } else { rightHtml += item; }
+    }
+
+    if (!leftHtml && !rightHtml) {
+      leftWall.style.display = 'none';
+      rightWall.style.display = 'none';
+      return;
+    }
+
+    // Duplicate for seamless loop
+    if (leftHtml) { leftTrack.innerHTML = leftHtml + leftHtml; leftWall.style.display = ''; }
+    if (rightHtml) { rightTrack.innerHTML = rightHtml + rightHtml; rightWall.style.display = ''; }
   }
 
   function createEntryCard(entry) {
@@ -576,6 +549,14 @@
 
     var dateDisplay = formatDateDisplay(entry.entryDate);
     var preview = entry.content.length > 100 ? entry.content.substring(0, 100) + '...' : entry.content;
+    var author = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(entry.phone) : (entry.phone || '');
+    var isOwner = typeof isCurrentUser === 'function' ? isCurrentUser(entry.phone) : false;
+
+    var detailTime = '';
+    var timeSource = entry.updatedAt || entry.createdAt;
+    if (timeSource && typeof formatEditorTime === 'function') {
+      detailTime = formatEditorTime(timeSource);
+    }
 
     var moodHtml = entry.mood ? '<span class="diary-entry-mood">' + entry.mood + '</span>' : '';
     var tagsHtml = entry.tags && entry.tags.length > 0
@@ -585,33 +566,38 @@
       ? '<span class="diary-photo-count">📷 ' + entry.photoPaths.length + '</span>'
       : '';
 
+    var actionsHtml = isOwner
+      ? '<div class="diary-entry-actions">' +
+          '<button class="diary-edit-btn" data-id="' + entry.id + '">编辑</button>' +
+          '<button class="diary-delete-btn" data-id="' + entry.id + '">删除</button>' +
+        '</div>'
+      : '';
+
+    var authorLine = escapeHtml(author) + (detailTime ? ' ' + detailTime : '');
     card.innerHTML =
-      '<div class="diary-entry-date">' + moodHtml + dateDisplay + '</div>' +
+      '<div class="diary-entry-date">' + moodHtml + dateDisplay + '<span class="diary-entry-author"> · ' + authorLine + '</span></div>' +
       '<div class="diary-entry-preview">' + escapeHtml(preview) + '</div>' +
       tagsHtml +
       '<div class="diary-entry-footer">' +
         photoCount +
-        '<div class="diary-entry-actions">' +
-          '<button class="diary-edit-btn" data-id="' + entry.id + '">编辑</button>' +
-          '<button class="diary-delete-btn" data-id="' + entry.id + '">删除</button>' +
-        '</div>' +
+        actionsHtml +
       '</div>';
 
-    card.querySelector('.diary-edit-btn').addEventListener('click', function() {
-      editEntry(entry);
-    });
+    if (isOwner) {
+      card.querySelector('.diary-edit-btn').addEventListener('click', function() {
+        editEntry(entry);
+      });
 
-    card.querySelector('.diary-delete-btn').addEventListener('click', function() {
-      confirmDelete(entry);
-    });
-
-    if (entry.photoPaths && entry.photoPaths.length > 0) {
-      card.addEventListener('click', function(e) {
-        if (e.target.tagName !== 'BUTTON') {
-          showEntryDetail(entry);
-        }
+      card.querySelector('.diary-delete-btn').addEventListener('click', function() {
+        confirmDelete(entry);
       });
     }
+
+    card.addEventListener('click', function(e) {
+      if (e.target.tagName !== 'BUTTON') {
+        showEntryDetail(entry);
+      }
+    });
 
     return card;
   }
@@ -624,7 +610,12 @@
     _pendingPhotos = [];
 
     var contentEl = document.getElementById('diary-content');
-    if (contentEl) contentEl.value = entry.content;
+    if (contentEl) { contentEl.value = entry.content; contentEl.style.display = 'block'; }
+
+    var preview = document.getElementById('diary-preview');
+    if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+    var previewBtn = document.getElementById('diary-preview-btn');
+    if (previewBtn) previewBtn.textContent = '👁 预览';
 
     var dateEl = document.getElementById('diary-date');
     if (dateEl) dateEl.value = entry.entryDate;
@@ -685,6 +676,13 @@
     var overlay = document.createElement('div');
     overlay.className = 'diary-detail-overlay';
 
+    var author = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(entry.phone) : (entry.phone || '');
+    var detailTime = '';
+    var timeSource = entry.updatedAt || entry.createdAt;
+    if (timeSource && typeof formatEditorTime === 'function') {
+      detailTime = formatEditorTime(timeSource);
+    }
+
     var photosHtml = '';
     if (entry.photoPaths && entry.photoPaths.length > 0) {
       photosHtml = '<div class="diary-detail-photos">';
@@ -702,8 +700,8 @@
     overlay.innerHTML =
       '<div class="diary-detail-card">' +
         '<button class="diary-detail-close">&times;</button>' +
-        '<div class="diary-detail-date">' + (entry.mood || '') + ' ' + formatDateDisplay(entry.entryDate) + '</div>' +
-        '<div class="diary-detail-content">' + escapeHtml(entry.content).replace(/\n/g, '<br>') + '</div>' +
+        '<div class="diary-detail-date">' + (entry.mood || '') + ' ' + formatDateDisplay(entry.entryDate) + '<span style="color:#9CB89C;font-size:0.85rem;margin-left:8px">' + escapeHtml(author) + (detailTime ? ' ' + detailTime : '') + '</span></div>' +
+        '<div class="diary-detail-content">' + renderMarkdown(entry.content) + '</div>' +
         photosHtml +
         tagsHtml +
       '</div>';
@@ -733,5 +731,26 @@
     div.textContent = text;
     return div.innerHTML;
   }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+      marked.setOptions({ breaks: true, gfm: true });
+      return DOMPurify.sanitize(marked.parse(text));
+    }
+    return escapeHtml(text).replace(/\n/g, '<br>');
+  }
+
+  window.zoomPhoto = function(url, author, time) {
+    var overlay = document.createElement('div');
+    overlay.className = 'photo-zoom-overlay';
+    overlay.innerHTML =
+      '<button class="photo-zoom-close">&times;</button>' +
+      '<img src="' + url + '">' +
+      '<div class="photo-zoom-meta">' + author + (time ? ' ' + time : '') + '</div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('.photo-zoom-close').addEventListener('click', function() { overlay.remove(); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  };
 
 })();

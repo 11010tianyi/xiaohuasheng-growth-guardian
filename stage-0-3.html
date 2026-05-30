@@ -109,6 +109,21 @@
         .tip-box h3 { font-family: 'Noto Serif SC', serif; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
         .tip-box p { font-size: 0.95rem; opacity: 0.9; }
 
+        .auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:10001;display:flex;align-items:center;justify-content:center;}
+        .auth-card{background:#fff;border-radius:24px;padding:40px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.15);text-align:center;}
+        .auth-card h2{font-family:"Noto Serif SC",serif;margin-bottom:10px;font-size:1.5rem;}
+        .auth-card p{color:#7A7A7A;font-size:0.9rem;margin-bottom:20px;}
+        .auth-card input{width:100%;padding:14px 18px;border:2px solid #E8E8E8;border-radius:14px;font-size:1rem;font-family:Nunito,sans-serif;margin-bottom:12px;outline:none;transition:border-color 0.3s;}
+        .auth-card input:focus{border-color:#F4A896;}
+        .auth-card button{width:100%;padding:14px;background:linear-gradient(135deg,#F4A896,#E8957A);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:700;font-family:Nunito,sans-serif;cursor:pointer;transition:transform 0.2s;}
+        .auth-card button:hover{transform:translateY(-2px);}
+        #auth-message{font-size:0.85rem;min-height:20px;margin-top:8px;}
+        .auth-hint{font-size:0.8rem;color:#7A7A7A;margin-top:12px;}
+        #auth-status{font-size:0.85rem;font-weight:600;}
+        #auth-status .auth-phone{color:#4A4A4A;}
+        #auth-status .auth-logout{color:#D47373;text-decoration:none;margin-left:8px;font-weight:600;}
+        #auth-status .auth-login-link{color:#F4A896;text-decoration:none;font-weight:700;cursor:pointer;}
+
         footer { padding: 40px; text-align: center; color: var(--text-secondary); background: var(--white); margin-top: 60px; }
 
         @media (max-width: 768px) {
@@ -130,8 +145,23 @@
 
     <nav>
         <a href="index.html" class="logo">小花生成长护航</a>
-        <a href="index.html" class="back-btn">← 返回首页</a>
+        <div style="display:flex;align-items:center;gap:16px;">
+            <span id="auth-status"></span>
+            <a href="index.html" class="back-btn">← 返回首页</a>
+        </div>
     </nav>
+
+    <div id="auth-modal" class="auth-overlay" style="display:none">
+        <div class="auth-card">
+            <h2>🔐 身份验证</h2>
+            <p>需要验证身份才能编辑打卡</p>
+            <input type="tel" id="auth-phone" placeholder="手机号（11位数字）" maxlength="11">
+            <input type="password" id="auth-pin" placeholder="PIN码（至少6位）" maxlength="20">
+            <button onclick="handleAuthSubmit()">验证</button>
+            <div id="auth-message"></div>
+            <p class="auth-hint">请使用已注册的手机号和PIN码</p>
+        </div>
+    </div>
 
     <header class="page-header">
         <div class="stage-badge">👶 第一阶段</div>
@@ -187,12 +217,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
     <script src="supabase-config.js"></script>
+    <script src="family-config.js"></script>
     <script src="supabase-sync.js"></script>
     <script src="milestones-data.js"></script>
     <script src="growth-guardian.js"></script>
+    <script src="music-player.js"></script>
     <script>
         initGrowthGuardian();
         requireAuth();
+        document.getElementById('auth-modal').addEventListener('click', function(e) { if (e.target === this) hideAuthModal(); });
+        document.getElementById('auth-pin').addEventListener('keydown', function(e) { if (e.key === 'Enter') handleAuthSubmit(); });
         renderMilestones(document.getElementById('milestone-container'), { phases: ['0-1', '1-2', '2-3'] });
         initTimeline();
     </script>

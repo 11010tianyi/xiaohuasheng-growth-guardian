@@ -93,7 +93,7 @@
     if (editorEl) {
       var eSpan = editorEl.querySelector('.milestone-editor');
       if (eSpan && phone) {
-        eSpan.textContent = (typeof maskPhone === 'function' ? maskPhone(phone) : phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(editorInfo[id].updated_at) : '');
+        eSpan.textContent = (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(phone) : phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(editorInfo[id].updated_at) : '');
         eSpan.style.display = '';
       }
     }
@@ -125,7 +125,7 @@
         if (eSpan) {
           var info = editorInfo[mid];
           if (info && info.phone && info.updated_at) {
-            eSpan.textContent = (typeof maskPhone === 'function' ? maskPhone(info.phone) : info.phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(info.updated_at) : '');
+            eSpan.textContent = (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(info.phone) : info.phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(info.updated_at) : '');
             eSpan.style.display = '';
           } else {
             eSpan.style.display = 'none';
@@ -297,7 +297,7 @@
       stage.items.forEach(function(item) {
         var status = checkedSet[item.id] ? '✅ 已完成' : '';
         var eInfo = editorInfo[item.id] || {};
-        var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+        var ePhone = eInfo.phone ? (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(eInfo.phone) : eInfo.phone) : '';
         var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
         sheetData.push([item.time, item.category, item.title, item.desc, item.suggestedTime, status, item.note, ePhone, eTime]);
       });
@@ -311,7 +311,7 @@
     MILESTONES_DATA.vaccine.items.forEach(function(item) {
       var status = checkedSet[item.id] ? '✅ 已完成' : '';
       var eInfo = editorInfo[item.id] || {};
-      var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+      var ePhone = eInfo.phone ? (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(eInfo.phone) : eInfo.phone) : '';
       var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
       vaccineData.push([item.age, item.name, item.dose, item.time, item.cost, item.importance, item.note, ePhone, eTime]);
     });
@@ -324,7 +324,7 @@
     MILESTONES_DATA.health.items.forEach(function(item) {
       var status = checkedSet[item.id] ? '✅ 已完成' : '';
       var eInfo = editorInfo[item.id] || {};
-      var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+      var ePhone = eInfo.phone ? (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(eInfo.phone) : eInfo.phone) : '';
       var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
       healthData.push([item.age, item.name, item.content, item.importance, status, item.note, ePhone, eTime]);
     });
@@ -337,7 +337,7 @@
     MILESTONES_DATA.ceremony.items.forEach(function(item) {
       var status = checkedSet[item.id] ? '✅ 已完成' : '';
       var eInfo = editorInfo[item.id] || {};
-      var ePhone = eInfo.phone ? (typeof maskPhone === 'function' ? maskPhone(eInfo.phone) : eInfo.phone) : '';
+      var ePhone = eInfo.phone ? (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(eInfo.phone) : eInfo.phone) : '';
       var eTime = eInfo.updated_at ? (typeof formatEditorTime === 'function' ? formatEditorTime(eInfo.updated_at) : '') : '';
       ceremonyData.push([item.age, item.name, item.content, item.form, status, item.note, ePhone, eTime]);
     });
@@ -538,6 +538,7 @@
   // ==================== Auth Modal & CSS ====================
 
   window.injectAuthUI = function() {
+    if (document.getElementById('auth-modal')) return; // 已存在，不重复创建
     var style = document.createElement('style');
     style.textContent = '\
 .auth-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:10001;align-items:center;justify-content:center;}\

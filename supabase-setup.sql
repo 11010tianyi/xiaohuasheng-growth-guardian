@@ -172,15 +172,23 @@ ON CONFLICT (milestone_id) DO NOTHING;
 -- 进入 Database > Replication > 启用 milestone_checks 表的 Realtime
 
 -- ============================================
--- v3: 记录点滴 — 日记功能
+-- v3: 记录点滴 — 日记功能（家人共享版）
 -- ============================================
 
--- 9. 日记表
-CREATE TABLE IF NOT EXISTS diary_entries (
+-- 迁移：删除旧的加密相关表和函数
+DROP TABLE IF EXISTS user_salts;
+DROP FUNCTION IF EXISTS get_or_create_salt(TEXT, TEXT);
+DROP FUNCTION IF EXISTS create_diary_entry(TEXT, TEXT, TEXT, TEXT, TEXT[], DATE, TEXT, TEXT[]);
+DROP FUNCTION IF EXISTS get_diary_entries(TEXT, TEXT, INT, INT);
+DROP FUNCTION IF EXISTS update_diary_entry(UUID, TEXT, TEXT, TEXT, TEXT, TEXT[], TEXT, TEXT[]);
+DROP FUNCTION IF EXISTS delete_diary_entry(UUID, TEXT, TEXT);
+
+-- 9. 日记表（明文内容，家人共享）
+DROP TABLE IF EXISTS diary_entries;
+CREATE TABLE diary_entries (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   phone TEXT NOT NULL,
-  content_encrypted TEXT,
-  content_iv TEXT,
+  content TEXT,
   photo_paths TEXT[],
   entry_date DATE NOT NULL,
   mood TEXT,
@@ -189,60 +197,17 @@ CREATE TABLE IF NOT EXISTS diary_entries (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 10. 加密盐值表（每个用户一个 salt）
-CREATE TABLE IF NOT EXISTS user_salts (
-  phone TEXT PRIMARY KEY REFERENCES users(phone),
-  salt TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- 11. 日记表 RLS
+-- 10. 日记表 RLS（禁止匿名直接访问）
 ALTER TABLE diary_entries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_salts ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "diary_no_anon" ON diary_entries;
-DROP POLICY IF EXISTS "salts_read_all" ON user_salts;
-
 CREATE POLICY "diary_no_anon" ON diary_entries FOR ALL TO anon USING (false);
-CREATE POLICY "salts_read_all" ON user_salts FOR SELECT TO anon USING (true);
 
--- 12. 获取/创建用户加密 salt
-CREATE OR REPLACE FUNCTION get_or_create_salt(p_phone TEXT, p_pin_hash TEXT)
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-  v_stored_pin TEXT;
-  v_existing_salt TEXT;
-  v_new_salt TEXT;
-BEGIN
-  SELECT pin_hash INTO v_stored_pin FROM users WHERE phone = p_phone;
-  IF v_stored_pin IS NULL THEN
-    RETURN json_build_object('success', false, 'message', '用户不存在');
-  END IF;
-  IF v_stored_pin != p_pin_hash THEN
-    RETURN json_build_object('success', false, 'message', 'PIN码错误');
-  END IF;
-
-  SELECT salt INTO v_existing_salt FROM user_salts WHERE phone = p_phone;
-
-  IF v_existing_salt IS NOT NULL THEN
-    RETURN json_build_object('success', true, 'salt', v_existing_salt);
-  END IF;
-
-  v_new_salt := encode(gen_random_bytes(32), 'base64');
-  INSERT INTO user_salts (phone, salt) VALUES (p_phone, v_new_salt);
-  RETURN json_build_object('success', true, 'salt', v_new_salt);
-END;
-$$;
-
--- 13. 创建日记
+-- 11. 创建日记
 CREATE OR REPLACE FUNCTION create_diary_entry(
   p_phone TEXT,
   p_pin_hash TEXT,
-  p_content_encrypted TEXT,
-  p_content_iv TEXT,
+  p_content TEXT,
   p_photo_paths TEXT[],
   p_entry_date DATE,
   p_mood TEXT,
@@ -264,8 +229,8 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'PIN码错误');
   END IF;
 
-  INSERT INTO diary_entries (phone, content_encrypted, content_iv, photo_paths, entry_date, mood, tags)
-  VALUES (p_phone, p_content_encrypted, p_content_iv, p_photo_paths, p_entry_date, p_mood, p_tags)
+  INSERT INTO diary_entries (phone, content, photo_paths, entry_date, mood, tags)
+  VALUES (p_phone, p_content, p_photo_paths, p_entry_date, p_mood, p_tags)
   RETURNING id INTO v_new_id;
 
   RETURN json_build_object(
@@ -276,7 +241,7 @@ BEGIN
 END;
 $$;
 
--- 14. 读取日记列表
+-- 12. 读取日记列表（所有登录用户可见全部日记，不按 phone 过滤）
 CREATE OR REPLACE FUNCTION get_diary_entries(
   p_phone TEXT,
   p_pin_hash TEXT,
@@ -301,9 +266,8 @@ BEGIN
 
   SELECT json_agg(row_to_json(d)) INTO v_result
   FROM (
-    SELECT id, content_encrypted, content_iv, photo_paths, entry_date, mood, tags, created_at, updated_at
+    SELECT id, phone, content, photo_paths, entry_date, mood, tags, created_at, updated_at
     FROM diary_entries
-    WHERE phone = p_phone
     ORDER BY entry_date DESC, created_at DESC
     LIMIT p_limit OFFSET p_offset
   ) d;
@@ -315,13 +279,12 @@ BEGIN
 END;
 $$;
 
--- 15. 更新日记
+-- 13. 更新日记（只能修改自己的）
 CREATE OR REPLACE FUNCTION update_diary_entry(
   p_entry_id UUID,
   p_phone TEXT,
   p_pin_hash TEXT,
-  p_content_encrypted TEXT,
-  p_content_iv TEXT,
+  p_content TEXT,
   p_photo_paths TEXT[],
   p_mood TEXT,
   p_tags TEXT[]
@@ -342,8 +305,7 @@ BEGIN
   END IF;
 
   UPDATE diary_entries
-  SET content_encrypted = p_content_encrypted,
-      content_iv = p_content_iv,
+  SET content = p_content,
       photo_paths = p_photo_paths,
       mood = p_mood,
       tags = p_tags,
@@ -358,7 +320,7 @@ BEGIN
 END;
 $$;
 
--- 16. 删除日记
+-- 14. 删除日记（只能删除自己的）
 CREATE OR REPLACE FUNCTION delete_diary_entry(
   p_entry_id UUID,
   p_phone TEXT,
@@ -389,7 +351,7 @@ BEGIN
 END;
 $$;
 
--- 17. Supabase Storage: 需要在 Dashboard 中手动创建 diary-photos 桶
+-- 15. Supabase Storage: 需要在 Dashboard 中手动创建 diary-photos 桶
 -- 进入 Storage > New Bucket > 名称: diary-photos, 勾选 Private
 --
 -- 18. Storage RLS 策略（本应用使用 anon 角色，不使用 Supabase Auth）

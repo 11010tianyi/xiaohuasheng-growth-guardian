@@ -5,8 +5,6 @@
 
   var _supabase = null;
   var _channel = null;
-  var _encryptionKey = null;
-  var _rawPin = null;
 
   // ==================== SHA-256 Hash ====================
 
@@ -18,98 +16,13 @@
     return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
   }
 
-  // ==================== Encryption Key Derivation ====================
-
-  function arrayToBase64(arr) {
-    var binary = '';
-    var bytes = new Uint8Array(arr);
-    for (var i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
-
-  function base64ToArray(base64) {
-    var binary = atob(base64);
-    var bytes = new Uint8Array(binary.length);
-    for (var i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return bytes;
-  }
-
-  async function deriveEncryptionKey(pin, saltBase64) {
-    var encoder = new TextEncoder();
-    var salt = base64ToArray(saltBase64);
-    var keyMaterial = await crypto.subtle.importKey(
-      'raw', encoder.encode(pin), 'PBKDF2', false, ['deriveKey']
-    );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt', 'decrypt']
-    );
-  }
-
-  window.initEncryptionKey = async function() {
-    if (!_supabase || !_rawPin) return false;
-    var session = getSession();
-    if (!session) return false;
-
-    try {
-      var result = await _supabase.rpc('get_or_create_salt', {
-        p_phone: session.phone,
-        p_pin_hash: session.pinHash
-      });
-
-      if (result.data && result.data.success && result.data.salt) {
-        _encryptionKey = await deriveEncryptionKey(_rawPin, result.data.salt);
-        console.log('[Supabase] 加密密钥派生成功');
-        return true;
-      } else {
-        console.error('[Supabase] 获取 salt 失败:', result.data);
-        return false;
-      }
-    } catch(e) {
-      console.error('[Supabase] 加密密钥初始化失败:', e);
-      return false;
-    }
-  };
-
-  window.getEncryptionKey = function() {
-    return _encryptionKey;
-  };
-
-  window.hasEncryptionKey = function() {
-    return !!_encryptionKey;
-  };
-
-  window.rederiveEncryptionKey = async function(pin) {
-    if (!_supabase) return false;
-    var session = getSession();
-    if (!session) return false;
-
-    _rawPin = pin;
-    var result = await initEncryptionKey();
-    if (result) {
-      session.rawPin = pin;
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    }
-    return result;
-  };
-
-  window.arrayToBase64 = arrayToBase64;
-  window.base64ToArray = base64ToArray;
-
   // ==================== Session Management ====================
 
   var SESSION_KEY = 'gg_session';
   var SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-  function saveSession(phone, phoneMasked, pinHash, rawPin) {
-    var session = { phone: phone, phoneMasked: phoneMasked, pinHash: pinHash, rawPin: rawPin || '', ts: Date.now() };
+  function saveSession(phone, phoneMasked, pinHash) {
+    var session = { phone: phone, phoneMasked: phoneMasked, pinHash: pinHash, ts: Date.now() };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   }
 
@@ -181,11 +94,9 @@
 
       if (result.data && result.data.success) {
         var masked = result.data.phone_masked || maskPhone(phone);
-        saveSession(phone, masked, pinHash, pin);
-        _rawPin = pin;
+        saveSession(phone, masked, pinHash);
         restoreAuthUI();
         syncFromSupabase();
-        initEncryptionKey();
         return { success: true, message: result.data.message, isNew: result.data.is_new };
       } else {
         return { success: false, message: (result.data && result.data.message) || '验证失败' };
@@ -200,8 +111,6 @@
 
   window.supabaseLogout = function() {
     clearSession();
-    _encryptionKey = null;
-    _rawPin = null;
     restoreAuthUI();
     showToast('已退出登录');
   };
@@ -328,7 +237,8 @@
     var editorEl = card.querySelector('.milestone-editor');
     if (editorEl) {
       if (phone && updatedAt) {
-        editorEl.textContent = maskPhone(phone) + ' ' + formatTime(updatedAt);
+        var displayName = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(phone) : maskPhone(phone);
+        editorEl.textContent = displayName + ' ' + formatTime(updatedAt);
         editorEl.style.display = '';
       } else {
         editorEl.style.display = 'none';
@@ -391,7 +301,8 @@
 
     if (statusEl) {
       if (session) {
-        statusEl.innerHTML = '<span class="auth-phone">' + session.phoneMasked + '</span> 已登录 <a href="javascript:void(0)" onclick="supabaseLogout()" class="auth-logout">退出</a>';
+        var identity = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(session.phone) : session.phoneMasked;
+        statusEl.innerHTML = '<span class="auth-phone">' + identity + '</span> 已登录 <a href="javascript:void(0)" onclick="supabaseLogout()" class="auth-logout">退出</a>';
         statusEl.classList.add('logged-in');
       } else {
         statusEl.innerHTML = '<a href="javascript:void(0)" onclick="showAuthModal()" class="auth-login-link">🔐 登录</a>';

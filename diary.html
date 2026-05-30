@@ -67,6 +67,25 @@
         .diary-key-btn:hover { transform: translateY(-2px); }
         .diary-key-hint { margin-top: 12px; font-size: 0.85rem; min-height: 20px; }
 
+        /* Entry Author */
+        .diary-entry-author { color: #9CB89C; font-size: 0.85rem; }
+
+        /* Auth */
+        .auth-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:10001;align-items:center;justify-content:center;}
+        .auth-card{background:#fff;border-radius:24px;padding:40px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.15);text-align:center;}
+        .auth-card h2{font-family:"Noto Serif SC",serif;margin-bottom:10px;font-size:1.5rem;}
+        .auth-card p{color:#7A7A7A;font-size:0.9rem;margin-bottom:20px;}
+        .auth-card input{width:100%;padding:14px 18px;border:2px solid #E8E8E8;border-radius:14px;font-size:1rem;font-family:Nunito,sans-serif;margin-bottom:12px;outline:none;transition:border-color 0.3s;}
+        .auth-card input:focus{border-color:#F4A896;}
+        .auth-card button{width:100%;padding:14px;background:linear-gradient(135deg,#F4A896,#E8957A);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:700;font-family:Nunito,sans-serif;cursor:pointer;transition:transform 0.2s;}
+        .auth-card button:hover{transform:translateY(-2px);}
+        #auth-message{font-size:0.85rem;min-height:20px;margin-top:8px;}
+        .auth-hint{font-size:0.8rem;color:#7A7A7A;margin-top:12px;}
+        #auth-status{font-size:0.85rem;font-weight:600;}
+        #auth-status .auth-phone{color:#4A4A4A;}
+        #auth-status .auth-logout{color:#D47373;text-decoration:none;margin-left:8px;font-weight:600;}
+        #auth-status .auth-login-link{color:#F4A896;text-decoration:none;font-weight:700;cursor:pointer;}
+
         /* Editor */
         .diary-editor { margin-bottom: 40px; }
         .diary-editor-card { background: var(--white); border-radius: 24px; padding: 30px; box-shadow: var(--shadow-soft); }
@@ -98,7 +117,10 @@
         .photo-remove { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; line-height: 1; }
         .photo-remove:hover { background: rgba(212,115,115,0.9); }
 
-        .diary-editor-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .diary-editor-actions { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
+        .diary-preview-toggle { padding: 10px 20px; background: var(--white); color: var(--text-secondary); border: 2px solid rgba(0,0,0,0.08); border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; }
+        .diary-preview-toggle:hover { border-color: var(--warm-coral); color: var(--warm-coral); }
+        .diary-preview { min-height: 150px; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 16px; margin-top: -1px; }
         .diary-save-btn { padding: 12px 32px; background: linear-gradient(135deg, var(--warm-coral), #E8957A); color: white; border: none; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.3s; box-shadow: var(--shadow-soft); }
         .diary-save-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
         .diary-save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -135,9 +157,45 @@
         .diary-detail-close { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border: none; background: rgba(0,0,0,0.06); border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
         .diary-detail-close:hover { background: rgba(0,0,0,0.1); }
         .diary-detail-date { font-family: 'Noto Serif SC', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
-        .diary-detail-content { font-size: 1rem; line-height: 1.8; color: var(--text-primary); margin-bottom: 20px; white-space: pre-wrap; }
+        .diary-detail-content { font-size: 1rem; line-height: 1.8; color: var(--text-primary); margin-bottom: 20px; }
+        .diary-detail-content h1 { font-family: 'Noto Serif SC', serif; font-size: 1.6rem; margin: 20px 0 10px; color: var(--text-primary); }
+        .diary-detail-content h2 { font-family: 'Noto Serif SC', serif; font-size: 1.35rem; margin: 18px 0 8px; color: var(--text-primary); }
+        .diary-detail-content h3 { font-family: 'Noto Serif SC', serif; font-size: 1.15rem; margin: 14px 0 6px; color: var(--text-primary); }
+        .diary-detail-content p { margin: 0 0 12px; }
+        .diary-detail-content ul, .diary-detail-content ol { margin: 0 0 12px; padding-left: 24px; }
+        .diary-detail-content li { margin-bottom: 4px; }
+        .diary-detail-content blockquote { border-left: 4px solid var(--warm-coral); padding: 8px 16px; margin: 12px 0; background: var(--soft-pink); border-radius: 0 12px 12px 0; color: var(--text-secondary); }
+        .diary-detail-content code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .diary-detail-content pre { background: rgba(0,0,0,0.06); padding: 14px; border-radius: 12px; overflow-x: auto; margin: 12px 0; }
+        .diary-detail-content pre code { background: none; padding: 0; }
+        .diary-detail-content strong { font-weight: 700; }
+        .diary-detail-content em { font-style: italic; }
+        .diary-detail-content del { text-decoration: line-through; color: var(--text-secondary); }
+        .diary-detail-content hr { border: none; border-top: 1px solid rgba(0,0,0,0.1); margin: 16px 0; }
+        .diary-detail-content img { max-width: 100%; border-radius: 12px; }
         .diary-detail-photos { display: flex; gap: 10px; flex-wrap: wrap; }
         .diary-detail-photo { width: 100%; max-width: 280px; border-radius: 16px; object-fit: cover; }
+
+        .photo-wall { display: none; position: fixed; top: 80px; bottom: 0; width: 220px; z-index: 1; pointer-events: none; }
+        .photo-wall-left { left: calc((100vw - 1340px) / 4); }
+        .photo-wall-right { right: calc((100vw - 1340px) / 4); }
+        .photo-wall-track { display: flex; flex-direction: column; gap: 12px; animation: photoScrollUp 15s linear infinite; padding: 16px 5px; pointer-events: auto; }
+        .photo-wall-left .photo-wall-track { animation-direction: normal; }
+        .photo-wall-right .photo-wall-track { animation-direction: reverse; }
+        .photo-wall-track:hover { animation-play-state: paused; }
+        @keyframes photoScrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        .photo-wall-item { flex-shrink: 0; cursor: pointer; transition: transform 0.3s; }
+        .photo-wall-item:hover { transform: scale(1.08); }
+        .photo-wall-thumb { width: 200px; height: 150px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .photo-wall-meta { font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .photo-wall-author { color: var(--warm-coral); font-weight: 600; }
+        @media (min-width: 1280px) { .photo-wall { display: block; } }
+
+        .photo-zoom-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; display: flex; align-items: center; justify-content: center; }
+        .photo-zoom-overlay img { max-width: 90vw; max-height: 85vh; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .photo-zoom-meta { position: absolute; bottom: 40px; text-align: center; color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+        .photo-zoom-close { position: absolute; top: 20px; right: 24px; color: white; font-size: 2rem; cursor: pointer; background: rgba(0,0,0,0.3); border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+        .photo-zoom-close:hover { background: rgba(0,0,0,0.6); }
 
         footer { padding: 40px; text-align: center; color: var(--text-secondary); background: var(--white); margin-top: 60px; }
 
@@ -160,44 +218,69 @@
 
     <nav>
         <a href="index.html" class="logo">小花生成长护航</a>
-        <a href="index.html" class="back-btn">← 返回首页</a>
+        <div style="display:flex;align-items:center;gap:16px;">
+            <span id="auth-status"></span>
+            <a href="index.html" class="back-btn">← 返回首页</a>
+        </div>
     </nav>
+
+    <div id="auth-modal" class="auth-overlay" style="display:none">
+        <div class="auth-card">
+            <h2>🔐 身份验证</h2>
+            <p>需要验证身份才能使用日记</p>
+            <input type="tel" id="auth-phone" placeholder="手机号（11位数字）" maxlength="11">
+            <input type="password" id="auth-pin" placeholder="PIN码（至少6位）" maxlength="20">
+            <button onclick="handleAuthSubmit()">验证</button>
+            <div id="auth-message"></div>
+            <p class="auth-hint">请使用已注册的手机号和PIN码</p>
+        </div>
+    </div>
 
     <header class="page-header">
         <div class="stage-badge">📔 记录点滴</div>
         <h1>成长日记</h1>
-        <p>每一天的点滴都值得被记住。文字经过端到端加密，只有你能阅读。</p>
+        <p>每一天的点滴都值得被记住。家人共享，一起记录成长。</p>
     </header>
 
     <div class="privacy-note">
-        🔒 <strong>隐私保护</strong>：日记内容使用 AES-256 加密后上传，服务器无法阅读你的文字。照片存储在私有云桶，仅登录后可访问。
+        🔒 <strong>隐私保护</strong>：日记内容仅登录用户可查看，照片存储在私有云桶，仅登录后可访问。
     </div>
 
     <section class="content-section">
         <div id="diary-container"></div>
     </section>
 
+    <div id="photo-wall-left" class="photo-wall photo-wall-left" style="display:none">
+        <div class="photo-wall-track" id="photo-wall-track-left"></div>
+    </div>
+    <div id="photo-wall-right" class="photo-wall photo-wall-right" style="display:none">
+        <div class="photo-wall-track" id="photo-wall-track-right"></div>
+    </div>
+
     <footer>
         <p>Made with ❤️ for 小花生 | 在她每个需要我的节点都不错过</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
     <script src="supabase-config.js"></script>
+    <script src="family-config.js"></script>
     <script src="supabase-sync.js"></script>
     <script src="milestones-data.js"></script>
     <script src="growth-guardian.js"></script>
+    <script src="music-player.js"></script>
     <script src="diary.js"></script>
     <script>
         initSupabase();
         requireAuth();
-        (async function() {
-          var session = JSON.parse(localStorage.getItem('gg_session') || 'null');
-          if (session && session.rawPin) {
-            await rederiveEncryptionKey(session.rawPin);
-          }
-          initDiary(document.getElementById('diary-container'));
-        })();
+        initDiary(document.getElementById('diary-container'));
+        document.getElementById('auth-modal').addEventListener('click', function(e) {
+            if (e.target === this) hideAuthModal();
+        });
+        document.getElementById('auth-pin').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') handleAuthSubmit();
+        });
     </script>
 </body>
 </html>
