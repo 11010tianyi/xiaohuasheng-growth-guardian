@@ -529,7 +529,7 @@
         phaseSections.forEach(function(s) { s.classList.remove('active'); });
         btn.classList.add('active');
         var phaseId = btn.getAttribute('data-phase');
-        var target = document.getElementById(phaseId);
+        var target = document.getElementById('phase-' + phaseId) || document.getElementById(phaseId);
         if (target) target.classList.add('active');
       });
     });
