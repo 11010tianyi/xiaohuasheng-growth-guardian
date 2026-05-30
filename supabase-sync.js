@@ -42,14 +42,22 @@
       console.log('[Supabase] 未配置，跳过初始化');
       return;
     }
+    if (/^__.*__$/.test(SUPABASE_CONFIG.url) || /^__.*__$/.test(SUPABASE_CONFIG.anonKey)) {
+      console.log('[Supabase] 占位符未替换，跳过初始化');
+      return;
+    }
     if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
       console.error('[Supabase] supabase-js 未加载');
       return;
     }
-    _supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-    console.log('[Supabase] 初始化成功');
-    subscribeRealtime();
-    restoreAuthUI();
+    try {
+      _supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+      console.log('[Supabase] 初始化成功');
+      subscribeRealtime();
+      restoreAuthUI();
+    } catch(e) {
+      console.error('[Supabase] 初始化失败:', e);
+    }
   };
 
   // ==================== Login / Register ====================
