@@ -588,6 +588,76 @@
     }
   };
 
+  // ==================== Index Page Auth Gate ====================
+
+  window.initIndexAuthGate = function() {
+    if (typeof isSupabaseLoggedIn === 'function' && isSupabaseLoggedIn()) {
+      return; // logged in, show everything
+    }
+
+    // Hide all main content (everything after nav, before footer)
+    var nav = document.querySelector('nav');
+    var footer = document.querySelector('footer');
+    var el = nav ? nav.nextElementSibling : null;
+    while (el && el !== footer) {
+      var next = el.nextElementSibling;
+      if (el.tagName !== 'SCRIPT' && el.id !== 'auth-status') {
+        el.style.display = 'none';
+      }
+      el = next;
+    }
+
+    // Show centered login prompt
+    var gateDiv = document.createElement('div');
+    gateDiv.className = 'auth-gate-section';
+    gateDiv.style.cssText = 'min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 30px 60px;text-align:center;';
+    gateDiv.innerHTML = '<div style="max-width:400px;width:100%;">' +
+      '<div style="font-size:4rem;margin-bottom:20px;">🌱</div>' +
+      '<h2 style="font-family:\'Noto Serif SC\',serif;font-size:2rem;margin-bottom:15px;">小花生成长护航</h2>' +
+      '<p style="color:#7A7A7A;margin-bottom:30px;">请登录后查看</p>' +
+      '<input type="tel" id="gate-phone" placeholder="手机号（11位数字）" maxlength="11" style="width:100%;padding:14px 18px;border:2px solid #E8E8E8;border-radius:14px;font-size:1rem;font-family:Nunito,sans-serif;margin-bottom:12px;outline:none;">' +
+      '<input type="password" id="gate-pin" placeholder="PIN码（至少6位）" maxlength="20" style="width:100%;padding:14px 18px;border:2px solid #E8E8E8;border-radius:14px;font-size:1rem;font-family:Nunito,sans-serif;margin-bottom:12px;outline:none;">' +
+      '<button id="gate-submit" style="width:100%;padding:14px;background:linear-gradient(135deg,#9CB89C,#C5D5C0);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:700;font-family:Nunito,sans-serif;cursor:pointer;">验证</button>' +
+      '<div id="gate-message" style="font-size:0.85rem;min-height:20px;margin-top:10px;"></div>' +
+      '<p style="font-size:0.8rem;color:#7A7A7A;margin-top:12px;">首次输入自动注册</p>' +
+      '</div>';
+    document.body.insertBefore(gateDiv, footer);
+
+    document.getElementById('gate-submit').addEventListener('click', handleGateSubmit);
+    document.getElementById('gate-pin').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleGateSubmit();
+    });
+    document.getElementById('gate-phone').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('gate-pin').focus();
+    });
+  };
+
+  async function handleGateSubmit() {
+    var phone = document.getElementById('gate-phone').value.trim();
+    var pin = document.getElementById('gate-pin').value;
+    var msgEl = document.getElementById('gate-message');
+
+    var result = await supabaseLogin(phone, pin);
+    if (result.success) {
+      if (msgEl) { msgEl.textContent = result.message; msgEl.style.color = '#5A9A5A'; }
+      // Remove gate and show content
+      var gate = document.querySelector('.auth-gate-section');
+      if (gate) gate.remove();
+      var nav = document.querySelector('nav');
+      var footer = document.querySelector('footer');
+      var el = nav ? nav.nextElementSibling : null;
+      while (el && el !== footer) {
+        var next = el.nextElementSibling;
+        if (el.tagName !== 'SCRIPT' && el.id !== 'auth-status') {
+          el.style.display = '';
+        }
+        el = next;
+      }
+    } else {
+      if (msgEl) { msgEl.textContent = result.message; msgEl.style.color = '#D47373'; }
+    }
+  }
+
   // ==================== Init ====================
 
   window.initGrowthGuardian = function() {

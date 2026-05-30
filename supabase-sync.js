@@ -19,6 +19,7 @@
   // ==================== Session Management ====================
 
   var SESSION_KEY = 'gg_session';
+  var SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
 
   function saveSession(phone, phoneMasked, pinHash) {
     var session = { phone: phone, phoneMasked: phoneMasked, pinHash: pinHash, ts: Date.now() };
@@ -28,7 +29,14 @@
   function getSession() {
     var raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
-    try { return JSON.parse(raw); } catch(e) { return null; }
+    try {
+      var session = JSON.parse(raw);
+      if (Date.now() - session.ts > SESSION_MAX_AGE) {
+        clearSession();
+        return null;
+      }
+      return session;
+    } catch(e) { return null; }
   }
 
   function clearSession() {
