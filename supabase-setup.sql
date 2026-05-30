@@ -22,10 +22,19 @@ CREATE TABLE IF NOT EXISTS milestone_checks (
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE milestone_checks ENABLE ROW LEVEL SECURITY;
 
--- 4. RLS 策略：里程碑打卡所有人可读，用户表禁止匿名读取
--- users 表包含 pin_hash，不能暴露给匿名用户
+-- 4. RLS 策略
+-- 清理可能存在的旧策略（支持重复运行）
+DROP POLICY IF EXISTS "users_read_all" ON users;
+DROP POLICY IF EXISTS "users_no_anon_read" ON users;
+DROP POLICY IF EXISTS "users_own_read" ON users;
+DROP POLICY IF EXISTS "checks_read_all" ON milestone_checks;
+
+-- users 表：禁止匿名读取（包含 pin_hash，绝不能暴露）
+-- 注意：本应用不使用 Supabase Auth，所有请求都是 anon 角色
 -- RPC 函数(login_user, toggle_milestone)使用 SECURITY DEFINER 绕过 RLS，不受影响
 CREATE POLICY "users_no_anon_read" ON users FOR SELECT TO anon USING (false);
+
+-- milestone_checks 表：允许匿名读取（需要加载打勾状态和编辑者信息）
 CREATE POLICY "checks_read_all" ON milestone_checks FOR SELECT TO anon USING (true);
 
 -- 5. 登录/注册函数
