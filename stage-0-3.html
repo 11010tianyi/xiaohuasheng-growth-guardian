@@ -192,6 +192,7 @@
     <script src="growth-guardian.js"></script>
     <script>
         initGrowthGuardian();
+        requireAuth();
         renderMilestones(document.getElementById('milestone-container'), { phases: ['0-1', '1-2', '2-3'] });
         initTimeline();
     </script>

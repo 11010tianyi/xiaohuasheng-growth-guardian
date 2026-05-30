@@ -568,7 +568,7 @@
 <input type="password" id="auth-pin" placeholder="PIN码（至少6位）" maxlength="20">\
 <button onclick="handleAuthSubmit()">验证</button>\
 <div id="auth-message"></div>\
-<p class="auth-hint">首次输入自动注册</p>\
+<p class="auth-hint">请使用已注册的手机号和PIN码</p>\
 </div>';
     document.body.appendChild(modal);
 
@@ -586,6 +586,15 @@
         if (e.key === 'Enter') handleAuthSubmit();
       });
     }
+  };
+
+  // ==================== Sub-page Auth Redirect ====================
+
+  window.requireAuth = function() {
+    if (typeof isSupabaseLoggedIn === 'function' && isSupabaseLoggedIn()) {
+      return; // logged in, ok
+    }
+    window.location.href = 'index.html';
   };
 
   // ==================== Index Page Auth Gate ====================
@@ -619,7 +628,7 @@
       '<input type="password" id="gate-pin" placeholder="PIN码（至少6位）" maxlength="20" style="width:100%;padding:14px 18px;border:2px solid #E8E8E8;border-radius:14px;font-size:1rem;font-family:Nunito,sans-serif;margin-bottom:12px;outline:none;">' +
       '<button id="gate-submit" style="width:100%;padding:14px;background:linear-gradient(135deg,#9CB89C,#C5D5C0);color:#fff;border:none;border-radius:14px;font-size:1rem;font-weight:700;font-family:Nunito,sans-serif;cursor:pointer;">验证</button>' +
       '<div id="gate-message" style="font-size:0.85rem;min-height:20px;margin-top:10px;"></div>' +
-      '<p style="font-size:0.8rem;color:#7A7A7A;margin-top:12px;">首次输入自动注册</p>' +
+      '<p style="font-size:0.8rem;color:#7A7A7A;margin-top:12px;">请使用已注册的手机号和PIN码</p>' +
       '</div>';
     document.body.insertBefore(gateDiv, footer);
 

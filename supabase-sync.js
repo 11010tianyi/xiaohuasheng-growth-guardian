@@ -68,7 +68,7 @@
     }
   };
 
-  // ==================== Login / Register ====================
+  // ==================== Login ====================
 
   window.supabaseLogin = async function(phone, pin) {
     if (!_supabase) {

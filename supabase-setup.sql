@@ -37,8 +37,10 @@ CREATE POLICY "users_no_anon_read" ON users FOR SELECT TO anon USING (false);
 -- milestone_checks 表：允许匿名读取（需要加载打勾状态和编辑者信息）
 CREATE POLICY "checks_read_all" ON milestone_checks FOR SELECT TO anon USING (true);
 
--- 5. 登录/注册函数
+-- 5. 登录函数（禁止注册，只允许数据库已有账号登录）
 -- 客户端用 SHA-256 对 PIN 做哈希后传入，服务端只存哈希
+-- 新增用户需手动在 Supabase SQL Editor 中执行:
+--   INSERT INTO users (phone, pin_hash) VALUES ('手机号', 'SHA-256哈希');
 CREATE OR REPLACE FUNCTION login_user(p_phone TEXT, p_pin_hash TEXT)
 RETURNS JSON
 LANGUAGE plpgsql
@@ -62,18 +64,10 @@ BEGIN
   SELECT pin_hash INTO v_existing_pin FROM users WHERE phone = p_phone;
 
   IF v_existing_pin IS NULL THEN
-    -- 新用户：注册
-    INSERT INTO users (phone, pin_hash) VALUES (p_phone, p_pin_hash);
-    v_phone_masked := substring(p_phone, 1, 3) || '****' || substring(p_phone, 8, 4);
-    RETURN json_build_object(
-      'success', true,
-      'message', '注册成功',
-      'phone', p_phone,
-      'phone_masked', v_phone_masked,
-      'is_new', true
-    );
+    -- 用户不存在，禁止注册
+    RETURN json_build_object('success', false, 'message', '该手机号未注册');
   ELSE
-    -- 老用户：验证 PIN
+    -- 验证 PIN
     IF v_existing_pin = p_pin_hash THEN
       v_phone_masked := substring(p_phone, 1, 3) || '****' || substring(p_phone, 8, 4);
       RETURN json_build_object(
