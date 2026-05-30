@@ -22,8 +22,10 @@ CREATE TABLE IF NOT EXISTS milestone_checks (
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE milestone_checks ENABLE ROW LEVEL SECURITY;
 
--- 4. RLS 策略：所有人可读
-CREATE POLICY "users_read_all" ON users FOR SELECT TO anon USING (true);
+-- 4. RLS 策略：里程碑打卡所有人可读，用户表禁止匿名读取
+-- users 表包含 pin_hash，不能暴露给匿名用户
+-- RPC 函数(login_user, toggle_milestone)使用 SECURITY DEFINER 绕过 RLS，不受影响
+CREATE POLICY "users_no_anon_read" ON users FOR SELECT TO anon USING (false);
 CREATE POLICY "checks_read_all" ON milestone_checks FOR SELECT TO anon USING (true);
 
 -- 5. 登录/注册函数
