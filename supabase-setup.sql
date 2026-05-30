@@ -170,3 +170,244 @@ ON CONFLICT (milestone_id) DO NOTHING;
 
 -- 8. 启用 Realtime（需要在 Supabase Dashboard 中手动操作）
 -- 进入 Database > Replication > 启用 milestone_checks 表的 Realtime
+
+-- ============================================
+-- v3: 记录点滴 — 日记功能
+-- ============================================
+
+-- 9. 日记表
+CREATE TABLE IF NOT EXISTS diary_entries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  phone TEXT NOT NULL,
+  content_encrypted TEXT,
+  content_iv TEXT,
+  photo_paths TEXT[],
+  entry_date DATE NOT NULL,
+  mood TEXT,
+  tags TEXT[],
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 10. 加密盐值表（每个用户一个 salt）
+CREATE TABLE IF NOT EXISTS user_salts (
+  phone TEXT PRIMARY KEY REFERENCES users(phone),
+  salt TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 11. 日记表 RLS
+ALTER TABLE diary_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_salts ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "diary_no_anon" ON diary_entries;
+DROP POLICY IF EXISTS "salts_read_all" ON user_salts;
+
+CREATE POLICY "diary_no_anon" ON diary_entries FOR ALL TO anon USING (false);
+CREATE POLICY "salts_read_all" ON user_salts FOR SELECT TO anon USING (true);
+
+-- 12. 获取/创建用户加密 salt
+CREATE OR REPLACE FUNCTION get_or_create_salt(p_phone TEXT, p_pin_hash TEXT)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_stored_pin TEXT;
+  v_existing_salt TEXT;
+  v_new_salt TEXT;
+BEGIN
+  SELECT pin_hash INTO v_stored_pin FROM users WHERE phone = p_phone;
+  IF v_stored_pin IS NULL THEN
+    RETURN json_build_object('success', false, 'message', '用户不存在');
+  END IF;
+  IF v_stored_pin != p_pin_hash THEN
+    RETURN json_build_object('success', false, 'message', 'PIN码错误');
+  END IF;
+
+  SELECT salt INTO v_existing_salt FROM user_salts WHERE phone = p_phone;
+
+  IF v_existing_salt IS NOT NULL THEN
+    RETURN json_build_object('success', true, 'salt', v_existing_salt);
+  END IF;
+
+  v_new_salt := encode(gen_random_bytes(32), 'base64');
+  INSERT INTO user_salts (phone, salt) VALUES (p_phone, v_new_salt);
+  RETURN json_build_object('success', true, 'salt', v_new_salt);
+END;
+$$;
+
+-- 13. 创建日记
+CREATE OR REPLACE FUNCTION create_diary_entry(
+  p_phone TEXT,
+  p_pin_hash TEXT,
+  p_content_encrypted TEXT,
+  p_content_iv TEXT,
+  p_photo_paths TEXT[],
+  p_entry_date DATE,
+  p_mood TEXT,
+  p_tags TEXT[]
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_stored_pin TEXT;
+  v_new_id UUID;
+BEGIN
+  SELECT pin_hash INTO v_stored_pin FROM users WHERE phone = p_phone;
+  IF v_stored_pin IS NULL THEN
+    RETURN json_build_object('success', false, 'message', '用户不存在');
+  END IF;
+  IF v_stored_pin != p_pin_hash THEN
+    RETURN json_build_object('success', false, 'message', 'PIN码错误');
+  END IF;
+
+  INSERT INTO diary_entries (phone, content_encrypted, content_iv, photo_paths, entry_date, mood, tags)
+  VALUES (p_phone, p_content_encrypted, p_content_iv, p_photo_paths, p_entry_date, p_mood, p_tags)
+  RETURNING id INTO v_new_id;
+
+  RETURN json_build_object(
+    'success', true,
+    'message', '保存成功',
+    'id', v_new_id
+  );
+END;
+$$;
+
+-- 14. 读取日记列表
+CREATE OR REPLACE FUNCTION get_diary_entries(
+  p_phone TEXT,
+  p_pin_hash TEXT,
+  p_limit INT DEFAULT 20,
+  p_offset INT DEFAULT 0
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_stored_pin TEXT;
+  v_result JSON;
+BEGIN
+  SELECT pin_hash INTO v_stored_pin FROM users WHERE phone = p_phone;
+  IF v_stored_pin IS NULL THEN
+    RETURN json_build_object('success', false, 'message', '用户不存在');
+  END IF;
+  IF v_stored_pin != p_pin_hash THEN
+    RETURN json_build_object('success', false, 'message', 'PIN码错误');
+  END IF;
+
+  SELECT json_agg(row_to_json(d)) INTO v_result
+  FROM (
+    SELECT id, content_encrypted, content_iv, photo_paths, entry_date, mood, tags, created_at, updated_at
+    FROM diary_entries
+    WHERE phone = p_phone
+    ORDER BY entry_date DESC, created_at DESC
+    LIMIT p_limit OFFSET p_offset
+  ) d;
+
+  RETURN json_build_object(
+    'success', true,
+    'entries', COALESCE(v_result, '[]'::json)
+  );
+END;
+$$;
+
+-- 15. 更新日记
+CREATE OR REPLACE FUNCTION update_diary_entry(
+  p_entry_id UUID,
+  p_phone TEXT,
+  p_pin_hash TEXT,
+  p_content_encrypted TEXT,
+  p_content_iv TEXT,
+  p_photo_paths TEXT[],
+  p_mood TEXT,
+  p_tags TEXT[]
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_stored_pin TEXT;
+BEGIN
+  SELECT pin_hash INTO v_stored_pin FROM users WHERE phone = p_phone;
+  IF v_stored_pin IS NULL THEN
+    RETURN json_build_object('success', false, 'message', '用户不存在');
+  END IF;
+  IF v_stored_pin != p_pin_hash THEN
+    RETURN json_build_object('success', false, 'message', 'PIN码错误');
+  END IF;
+
+  UPDATE diary_entries
+  SET content_encrypted = p_content_encrypted,
+      content_iv = p_content_iv,
+      photo_paths = p_photo_paths,
+      mood = p_mood,
+      tags = p_tags,
+      updated_at = now()
+  WHERE id = p_entry_id AND phone = p_phone;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object('success', false, 'message', '日记不存在或无权修改');
+  END IF;
+
+  RETURN json_build_object('success', true, 'message', '更新成功');
+END;
+$$;
+
+-- 16. 删除日记
+CREATE OR REPLACE FUNCTION delete_diary_entry(
+  p_entry_id UUID,
+  p_phone TEXT,
+  p_pin_hash TEXT
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_stored_pin TEXT;
+BEGIN
+  SELECT pin_hash INTO v_stored_pin FROM users WHERE phone = p_phone;
+  IF v_stored_pin IS NULL THEN
+    RETURN json_build_object('success', false, 'message', '用户不存在');
+  END IF;
+  IF v_stored_pin != p_pin_hash THEN
+    RETURN json_build_object('success', false, 'message', 'PIN码错误');
+  END IF;
+
+  DELETE FROM diary_entries WHERE id = p_entry_id AND phone = p_phone;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object('success', false, 'message', '日记不存在或无权删除');
+  END IF;
+
+  RETURN json_build_object('success', true, 'message', '删除成功');
+END;
+$$;
+
+-- 17. Supabase Storage: 需要在 Dashboard 中手动创建 diary-photos 桶
+-- 进入 Storage > New Bucket > 名称: diary-photos, 勾选 Private
+--
+-- 18. Storage RLS 策略（本应用使用 anon 角色，不使用 Supabase Auth）
+-- 安全性依赖：应用层登录门控 + RPC 身份验证 + 不可猜测的文件路径 + 签名 URL
+
+-- 清理可能存在的旧策略
+DROP POLICY IF EXISTS "diary_photos_anon_upload" ON storage.objects;
+DROP POLICY IF EXISTS "diary_photos_anon_read" ON storage.objects;
+DROP POLICY IF EXISTS "diary_photos_anon_delete" ON storage.objects;
+
+-- 允许 anon 上传照片（路径格式: 手机号/时间戳-随机串.jpg）
+CREATE POLICY "diary_photos_anon_upload" ON storage.objects
+FOR INSERT TO anon WITH CHECK (bucket_id = 'diary-photos');
+
+-- 允许 anon 读取照片（读取时通过签名 URL，URL 1小时后失效）
+CREATE POLICY "diary_photos_anon_read" ON storage.objects
+FOR SELECT TO anon USING (bucket_id = 'diary-photos');
+
+-- 允许 anon 删除照片（仅通过日记编辑界面，RPC 验证身份后执行）
+CREATE POLICY "diary_photos_anon_delete" ON storage.objects
+FOR DELETE TO anon USING (bucket_id = 'diary-photos');

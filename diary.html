@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记录点滴 | 小花生成长护航</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FDF8F3;
+            --warm-peach: #FFF0E8;
+            --soft-amber: #F5D5B8;
+            --warm-coral: #F4A896;
+            --sage: #C5D5C0;
+            --sage-dark: #9CB89C;
+            --warm-gold: #E8D4A8;
+            --soft-pink: #FFE4E1;
+            --lavender: #F0E6F5;
+            --text-primary: #4A4A4A;
+            --text-secondary: #7A7A7A;
+            --white: #FFFFFF;
+            --shadow-soft: 0 10px 40px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', 'Noto Serif SC', sans-serif;
+            background: var(--cream);
+            color: var(--text-primary);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        .organic-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: hidden; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.3; animation: float 20s infinite ease-in-out; }
+        .blob-1 { width: 500px; height: 500px; background: linear-gradient(135deg, var(--warm-peach), var(--soft-amber)); top: -100px; right: -100px; }
+        .blob-2 { width: 400px; height: 400px; background: linear-gradient(135deg, var(--warm-gold), var(--warm-peach)); bottom: -100px; left: -100px; animation-delay: -5s; }
+        @keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(20px, -20px) scale(1.05); } }
+
+        nav { position: fixed; top: 0; width: 100%; padding: 20px 60px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; background: rgba(253, 248, 243, 0.9); backdrop-filter: blur(20px); }
+        .logo { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo::before { content: "🌱"; font-size: 1.8rem; }
+        .back-btn { display: flex; align-items: center; gap: 8px; padding: 12px 24px; background: var(--white); border-radius: 50px; text-decoration: none; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; box-shadow: var(--shadow-soft); transition: all 0.3s ease; }
+        .back-btn:hover { transform: translateX(-5px); box-shadow: var(--shadow-hover); color: var(--warm-coral); }
+
+        .page-header { padding: 140px 60px 40px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .stage-badge { display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, var(--warm-peach), var(--soft-amber)); color: var(--text-primary); border-radius: 50px; font-size: 0.85rem; font-weight: 700; margin-bottom: 20px; }
+        .page-header h1 { font-family: 'Noto Serif SC', serif; font-size: 3rem; margin-bottom: 20px; color: var(--text-primary); }
+        .page-header p { font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+
+        .privacy-note { max-width: 700px; margin: 0 auto 30px; padding: 20px 30px; background: linear-gradient(135deg, var(--lavender), var(--soft-pink)); border-radius: 20px; text-align: center; font-size: 0.9rem; color: var(--text-secondary); }
+        .privacy-note strong { color: var(--text-primary); }
+
+        .content-section { max-width: 900px; margin: 0 auto; padding: 20px 60px 100px; }
+
+        /* Key Prompt */
+        .diary-key-prompt { display: flex; justify-content: center; padding: 40px 0; }
+        .diary-key-card { background: var(--white); border-radius: 24px; padding: 40px; box-shadow: var(--shadow-soft); text-align: center; max-width: 400px; width: 100%; }
+        .diary-key-card h3 { font-family: 'Noto Serif SC', serif; font-size: 1.3rem; margin-bottom: 12px; }
+        .diary-key-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px; }
+        .diary-key-form { display: flex; gap: 10px; }
+        .diary-key-form input { flex: 1; padding: 12px 16px; border: 2px solid rgba(0,0,0,0.08); border-radius: 12px; font-size: 1rem; font-family: 'Nunito', sans-serif; outline: none; transition: border-color 0.3s; }
+        .diary-key-form input:focus { border-color: var(--warm-coral); }
+        .diary-key-btn { padding: 12px 24px; background: linear-gradient(135deg, var(--warm-coral), #E8957A); color: white; border: none; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s; }
+        .diary-key-btn:hover { transform: translateY(-2px); }
+        .diary-key-hint { margin-top: 12px; font-size: 0.85rem; min-height: 20px; }
+
+        /* Editor */
+        .diary-editor { margin-bottom: 40px; }
+        .diary-editor-card { background: var(--white); border-radius: 24px; padding: 30px; box-shadow: var(--shadow-soft); }
+        .diary-editor-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .diary-date-input { padding: 10px 16px; border: 2px solid rgba(0,0,0,0.08); border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--text-primary); outline: none; }
+        .diary-date-input:focus { border-color: var(--warm-coral); }
+
+        .diary-mood-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+        .mood-option { font-size: 1.5rem; cursor: pointer; padding: 4px; border-radius: 8px; transition: all 0.2s; border: 2px solid transparent; }
+        .mood-option:hover { background: var(--warm-peach); }
+        .mood-option.selected { background: var(--warm-peach); border-color: var(--warm-coral); transform: scale(1.2); }
+
+        .diary-tag-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .tag-option { padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: var(--warm-peach); color: var(--text-secondary); transition: all 0.2s; }
+        .tag-option:hover { background: var(--soft-amber); }
+        .tag-option.selected { background: var(--warm-coral); color: white; }
+
+        .diary-textarea { width: 100%; min-height: 150px; border: 2px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 16px; font-family: 'Nunito', 'Noto Serif SC', sans-serif; font-size: 1rem; color: var(--text-primary); resize: vertical; outline: none; line-height: 1.8; transition: border-color 0.3s; }
+        .diary-textarea:focus { border-color: var(--warm-coral); }
+        .diary-textarea::placeholder { color: #C0C0C0; }
+
+        .diary-photo-area { display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0; align-items: flex-start; }
+        .diary-photo-add { width: 80px; height: 80px; border: 2px dashed rgba(0,0,0,0.12); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; color: var(--text-secondary); }
+        .diary-photo-add:hover { border-color: var(--warm-coral); color: var(--warm-coral); background: var(--warm-peach); }
+        .diary-photo-add span { font-size: 1.5rem; }
+        .diary-photo-add small { font-size: 0.7rem; margin-top: 2px; }
+        .diary-photo-thumb { position: relative; width: 80px; height: 80px; border-radius: 12px; overflow: hidden; }
+        .diary-photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-remove { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; line-height: 1; }
+        .photo-remove:hover { background: rgba(212,115,115,0.9); }
+
+        .diary-editor-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .diary-save-btn { padding: 12px 32px; background: linear-gradient(135deg, var(--warm-coral), #E8957A); color: white; border: none; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.3s; box-shadow: var(--shadow-soft); }
+        .diary-save-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .diary-save-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .diary-cancel-btn { padding: 12px 24px; background: var(--white); color: var(--text-secondary); border: 2px solid rgba(0,0,0,0.08); border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.3s; }
+        .diary-cancel-btn:hover { border-color: var(--text-secondary); }
+
+        /* Diary List */
+        .diary-list { margin-top: 10px; }
+        .diary-loading, .diary-empty { text-align: center; padding: 40px; color: var(--text-secondary); font-size: 1rem; }
+        .diary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+
+        .diary-entry-card { background: var(--white); border-radius: 20px; padding: 24px; box-shadow: var(--shadow-soft); transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; }
+        .diary-entry-card::before { content: ''; position: absolute; left: 0; top: 0; width: 4px; height: 100%; background: linear-gradient(180deg, var(--warm-coral), var(--soft-amber)); transform: scaleY(0); transform-origin: bottom; transition: transform 0.3s; }
+        .diary-entry-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .diary-entry-card:hover::before { transform: scaleY(1); }
+
+        .diary-entry-date { font-family: 'Noto Serif SC', serif; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .diary-entry-mood { font-size: 1.2rem; }
+        .diary-entry-preview { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .diary-entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .diary-tag { padding: 3px 10px; background: var(--warm-peach); border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: #C08060; }
+        .diary-entry-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .diary-photo-count { font-size: 0.85rem; color: var(--text-secondary); }
+        .diary-entry-actions { display: flex; gap: 8px; }
+        .diary-edit-btn, .diary-delete-btn { padding: 5px 14px; border: none; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .diary-edit-btn { background: var(--warm-peach); color: #C08060; }
+        .diary-edit-btn:hover { background: var(--soft-amber); }
+        .diary-delete-btn { background: rgba(212,115,115,0.1); color: #D47373; }
+        .diary-delete-btn:hover { background: rgba(212,115,115,0.2); }
+
+        /* Detail Overlay */
+        .diary-detail-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .diary-detail-card { background: var(--white); border-radius: 24px; padding: 30px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; position: relative; }
+        .diary-detail-close { position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; border: none; background: rgba(0,0,0,0.06); border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+        .diary-detail-close:hover { background: rgba(0,0,0,0.1); }
+        .diary-detail-date { font-family: 'Noto Serif SC', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
+        .diary-detail-content { font-size: 1rem; line-height: 1.8; color: var(--text-primary); margin-bottom: 20px; white-space: pre-wrap; }
+        .diary-detail-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+        .diary-detail-photo { width: 100%; max-width: 280px; border-radius: 16px; object-fit: cover; }
+
+        footer { padding: 40px; text-align: center; color: var(--text-secondary); background: var(--white); margin-top: 60px; }
+
+        @media (max-width: 768px) {
+            nav { padding: 15px 30px; }
+            .page-header { padding: 120px 30px 30px; }
+            .page-header h1 { font-size: 2rem; }
+            .content-section { padding: 20px 30px 60px; }
+            .diary-grid { grid-template-columns: 1fr; }
+            .diary-editor-header { flex-direction: column; align-items: flex-start; }
+            .diary-key-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="organic-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <nav>
+        <a href="index.html" class="logo">小花生成长护航</a>
+        <a href="index.html" class="back-btn">← 返回首页</a>
+    </nav>
+
+    <header class="page-header">
+        <div class="stage-badge">📔 记录点滴</div>
+        <h1>成长日记</h1>
+        <p>每一天的点滴都值得被记住。文字经过端到端加密，只有你能阅读。</p>
+    </header>
+
+    <div class="privacy-note">
+        🔒 <strong>隐私保护</strong>：日记内容使用 AES-256 加密后上传，服务器无法阅读你的文字。照片存储在私有云桶，仅登录后可访问。
+    </div>
+
+    <section class="content-section">
+        <div id="diary-container"></div>
+    </section>
+
+    <footer>
+        <p>Made with ❤️ for 小花生 | 在她每个需要我的节点都不错过</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-sync.js"></script>
+    <script src="milestones-data.js"></script>
+    <script src="growth-guardian.js"></script>
+    <script src="diary.js"></script>
+    <script>
+        initSupabase();
+        requireAuth();
+        (async function() {
+          var session = JSON.parse(localStorage.getItem('gg_session') || 'null');
+          if (session && session.rawPin) {
+            await rederiveEncryptionKey(session.rawPin);
+          }
+          initDiary(document.getElementById('diary-container'));
+        })();
+    </script>
+</body>
+</html>
