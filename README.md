@@ -20,15 +20,20 @@
 ├── supabase-config.js    # Supabase 配置（用户填入 url + anonKey）
 ├── supabase-sync.js      # Supabase 实时同步模块（登录/同步/Realtime）
 ├── supabase-setup.sql    # 数据库初始化脚本（在 Supabase SQL Editor 中运行）
-├── docs/                 # 文档
-│   ├── supabase-setup.md # Supabase 配置与数据库方案
-│   └── dary-share-plan.md # 日记共享方案（历史参考）
-└── push-to-github.sh     # GitHub Pages 部署脚本
+├── docs/                        # 文档
+│   ├── supabase-setup.md        # Supabase 配置与数据库方案
+│   ├── dary-share-plan.md       # 日记共享方案（历史参考）
+│   ├── ITEM_LINKS.md            # 跨区同步映射表（里程碑↔疫苗/体检/仪式）
+│   └── v4.1.0-milestone-card-overlay.md # 4.1.0 版本变更说明（详情弹窗、日记关联）
+└── push-to-github.sh            # GitHub Pages 部署脚本
 ```
 
 ## 功能
 
 - **里程碑追踪**：打勾标记已完成项，进度条实时更新
+- **里程碑关联日记**：日记编辑器中可选关联里程碑，保存后自动编码为 `📌` 标签，查看日记时展示关联里程碑的科学解释
+- **里程碑卡片详情弹窗**：点击卡片弹出 Markdown 渲染的科学解释 + 权威来源链接（331+ 条数据全覆盖）
+- **跨区自动同步**：同一事项（如"42天体检"）在里程碑页和体检/疫苗/仪式页之间自动同步勾选状态
 - **成长日记**：家人共享日记，支持 Markdown 编辑/预览、照片、心情、标签
 - **日记照片墙**：宽屏两侧自动滚动照片瀑布，带上传人时间戳，点击放大
 - **背景音乐**：全局音乐播放器，3 首轻音乐随机切换，默认关闭

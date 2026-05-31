@@ -32,6 +32,77 @@
     return map;
   }
 
+  // ==================== Cross-Section Link Map ====================
+  // Maps IDs across different sections (milestone ↔ health/vaccine/ceremony)
+  // that represent the same real-world task.
+
+  var ITEM_LINKS = (function() {
+    var groups = [
+      ['s01-002', 'h-001'],
+      ['s01-005', 'v-001'],
+      ['s01-006', 'v-002'],
+      ['s01-011', 'h-002'],
+      ['s01-012', 'v-003'],
+      ['s01-013', 'v-005'],
+      ['s01-014', 'v-006'],
+      ['s01-015', 'v-007'],
+      ['s01-021', 'v-010'],
+      ['s01-022', 'v-011'],
+      ['s01-023', 'v-016'],
+      ['s01-031', 'v-018'],
+      ['s01-032', 'v-019', 'v-024'],
+      ['s01-033', 'v-020'],
+      ['s01-034', 's07-011', 'v-021'],
+      ['s01-040', 'h-006'],
+      ['s01-041', 'v-022'],
+      ['s01-042', 'v-023'],
+      ['s02-002', 'v-025'],
+      ['s02-003', 'v-028'],
+      ['s02-011', 'h-007'],
+      ['s02-012', 'v-027'],
+      ['s02-013', 's03-002', 'v-031'],
+      ['s02-014', 'v-029'],
+      ['s02-022', 's07-010', 'h-016'],
+      ['s02-030', 'h-008'],
+      ['s02-031', 'v-030'],
+      ['s01-007', 'c-001'],
+      ['s01-008', 'c-002'],
+      ['s01-019', 'c-003'],
+      ['s01-029', 'c-004'],
+      ['s01-049', 'c-005'],
+      ['s06-019', 'c-008'],
+      ['s02-038', 'c-006'],
+      ['s03-001', 'h-009'],
+      ['s03-016', 'h-010'],
+      ['s03-017', 'v-032'],
+      ['s03-018', 'v-033'],
+      ['s03-025', 'c-007'],
+      ['s04-005', 'h-011'],
+      ['s04-006', 'v-037'],
+      ['s04-007', 'v-034'],
+      ['s04-018', 'h-012'],
+      ['s04-019', 'v-035'],
+      ['s04-024', 'c-009'],
+      ['s05-011', 'h-013'],
+      ['s05-017', 'c-010'],
+      ['s06-012', 'h-014'],
+      ['s06-013', 'v-036'],
+      ['s06-020', 'c-011'],
+      ['s07-017', 'c-012'],
+      ['s08-008', 'c-013'],
+      ['s08-010', 's10-009', 'h-015'],
+      ['s09-007', 'c-014'],
+      ['s10-006', 'c-015']
+    ];
+    var map = {};
+    groups.forEach(function(group) {
+      group.forEach(function(id) {
+        map[id] = group.filter(function(x) { return x !== id; });
+      });
+    });
+    return map;
+  })();
+
   // ==================== Legacy Migration ====================
 
   function migrateLegacyCheckedItems() {
@@ -75,6 +146,32 @@
     doToggle(element, id, isChecked);
   };
 
+  function toggleLinkedItems(linkedIds, isChecked) {
+    if (!linkedIds || linkedIds.length === 0) return;
+    var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
+    var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
+    var phone = (typeof getCurrentPhoneRaw === 'function') ? getCurrentPhoneRaw() : '';
+    var now = new Date().toISOString();
+
+    linkedIds.forEach(function(lid) {
+      if (isChecked) {
+        if (checkedItems.indexOf(lid) === -1) checkedItems.push(lid);
+      } else {
+        checkedItems = checkedItems.filter(function(item) { return item !== lid; });
+      }
+      editorInfo[lid] = { phone: phone, updated_at: now, checked: isChecked };
+      var el = document.querySelector('.milestone-check[data-id="' + lid + '"]');
+      if (el) {
+        if (isChecked) el.classList.add('checked');
+        else el.classList.remove('checked');
+      }
+      if (typeof supabaseToggle === 'function') supabaseToggle(lid, isChecked);
+    });
+
+    localStorage.setItem('checkedItems', JSON.stringify(checkedItems));
+    localStorage.setItem('gg_editor_info', JSON.stringify(editorInfo));
+  }
+
   function doToggle(element, id, isChecked) {
     var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
     if (isChecked) {
@@ -98,6 +195,7 @@
       }
     }
 
+    toggleLinkedItems(ITEM_LINKS[id], isChecked);
     updateProgress();
     encodeCheckedToHash();
     if (typeof supabaseToggle === 'function') supabaseToggle(id, isChecked);
@@ -434,15 +532,15 @@
       html += '<div class="milestones-grid">';
       stage.items.forEach(function(item) {
         var catClass = categoryClassMap[item.category] || 'category-health';
-        html += '<div class="milestone-card">';
+        html += '<div class="milestone-card" data-milestone-id="' + item.id + '" onclick="showMilestoneDetail(this, event)">';
         html += '<div class="milestone-category ' + catClass + '">' + item.category + '</div>';
         html += '<h3 class="milestone-title">' + item.title + '</h3>';
         html += '<p class="milestone-desc">' + item.desc + '</p>';
         html += '<div class="milestone-meta">';
-        html += '<span class="milestone-time">📅 ' + item.suggestedTime + '</span>';
+        html += '<span class="milestone-time">📅 ' + item.suggestedTime + '　　⏰ ' + item.time + '</span>';
         if (item.note) html += '<span class="milestone-note">' + item.note + '</span>';
         html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span>';
-        html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
+        html += '<div class="milestone-check" data-id="' + item.id + '" onclick="event.stopPropagation();toggleCheck(this)"></div>';
         html += '</div>';
         html += '</div>';
       });
@@ -463,13 +561,13 @@
     html += '<h2 style="text-align:center;margin-bottom:30px;font-family:\'Noto Serif SC\',serif;color:#2d5016;">💉 疫苗接种时间表</h2>';
     html += '<div class="milestone-grid">';
     MILESTONES_DATA.vaccine.items.forEach(function(item) {
-      html += '<div class="milestone-card">';
+      html += '<div class="milestone-card" data-milestone-id="' + item.id + '" onclick="showMilestoneDetail(this, event)">';
       html += '<div class="milestone-category">' + item.importance + ' · ' + item.cost + '</div>';
       html += '<h3 class="milestone-title">' + item.name + ' ' + item.dose + '</h3>';
       html += '<p class="milestone-desc">' + item.age + ' | ' + item.time + '</p>';
       if (item.note) html += '<div class="milestone-meta"><span class="milestone-note">' + item.note + '</span></div>';
       html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span>';
-      html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
+      html += '<div class="milestone-check" data-id="' + item.id + '" onclick="event.stopPropagation();toggleCheck(this)"></div>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -478,13 +576,13 @@
     html += '<h2 style="text-align:center;margin-bottom:30px;font-family:\'Noto Serif SC\',serif;color:#2d5016;">🏥 体检时间表</h2>';
     html += '<div class="milestone-grid">';
     MILESTONES_DATA.health.items.forEach(function(item) {
-      html += '<div class="milestone-card">';
+      html += '<div class="milestone-card" data-milestone-id="' + item.id + '" onclick="showMilestoneDetail(this, event)">';
       html += '<div class="milestone-category">' + item.importance + '</div>';
       html += '<h3 class="milestone-title">' + item.name + '</h3>';
       html += '<p class="milestone-desc">' + item.content + '</p>';
       html += '<div class="milestone-meta"><span class="milestone-time">' + item.age + '</span>';
       html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span></div>';
-      html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
+      html += '<div class="milestone-check" data-id="' + item.id + '" onclick="event.stopPropagation();toggleCheck(this)"></div>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -501,7 +599,7 @@
     html += '<h2 style="text-align:center;margin-bottom:30px;font-family:\'Noto Serif SC\',serif;color:#2d5016;">💝 成长重要仪式清单</h2>';
     html += '<div class="milestone-grid">';
     MILESTONES_DATA.ceremony.items.forEach(function(item) {
-      html += '<div class="milestone-card">';
+      html += '<div class="milestone-card" data-milestone-id="' + item.id + '" onclick="showMilestoneDetail(this, event)">';
       html += '<div class="milestone-category">' + item.age + '</div>';
       html += '<h3 class="milestone-title">' + item.name + '</h3>';
       html += '<p class="milestone-desc">' + item.content + '</p>';
@@ -510,7 +608,7 @@
       if (item.note) html += '<span class="milestone-note">' + item.note + '</span>';
       html += '<span class="milestone-editor" style="display:none;font-size:0.8rem;color:#9CB89C;"></span>';
       html += '</div>';
-      html += '<div class="milestone-check" data-id="' + item.id + '" onclick="toggleCheck(this)"></div>';
+      html += '<div class="milestone-check" data-id="' + item.id + '" onclick="event.stopPropagation();toggleCheck(this)"></div>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -587,6 +685,163 @@
         if (e.key === 'Enter') handleAuthSubmit();
       });
     }
+  };
+
+  // ==================== Detail Overlay ====================
+
+  window.injectDetailOverlayCSS = function() {
+    if (document.getElementById('gg-overlay-style')) return;
+    var style = document.createElement('style');
+    style.id = 'gg-overlay-style';
+    style.textContent = '\
+.milestone-card{cursor:pointer;}\
+.gg-detail-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);backdrop-filter:blur(5px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;}\
+.gg-detail-card{background:#fff;border-radius:24px;padding:32px;max-width:620px;width:100%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.15);}\
+.gg-detail-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border:none;background:rgba(0,0,0,0.06);border-radius:50%;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#7A7A7A;transition:background 0.2s;}\
+.gg-detail-close:hover{background:rgba(0,0,0,0.1);}\
+.gg-detail-category{display:inline-block;padding:4px 12px;border-radius:10px;font-size:0.8rem;font-weight:600;margin-bottom:10px;}\
+.gg-detail-title{font-family:"Noto Serif SC",serif;font-size:1.5rem;font-weight:700;margin-bottom:8px;color:#2d2d2d;}\
+.gg-detail-meta{font-size:0.9rem;color:#7A7A7A;margin-bottom:16px;display:flex;gap:16px;flex-wrap:wrap;}\
+.gg-detail-desc{font-size:1rem;color:#4A4A4A;line-height:1.7;margin-bottom:16px;padding:14px 16px;background:rgba(156,184,156,0.08);border-radius:14px;}\
+.gg-detail-divider{height:1px;background:rgba(0,0,0,0.08);margin:20px 0;}\
+.gg-detail-heading{font-family:"Noto Serif SC",serif;font-size:1.1rem;font-weight:700;color:#2d2d2d;margin-bottom:12px;}\
+.gg-detail-science{font-size:0.95rem;line-height:1.8;color:#4A4A4A;}\
+.gg-detail-science h1,.gg-detail-science h2,.gg-detail-science h3{font-family:"Noto Serif SC",serif;margin:16px 0 8px;color:#2d2d2d;}\
+.gg-detail-science h1{font-size:1.4rem;}\
+.gg-detail-science h2{font-size:1.2rem;}\
+.gg-detail-science h3{font-size:1.05rem;}\
+.gg-detail-science p{margin:0 0 10px;}\
+.gg-detail-science ul,.gg-detail-science ol{padding-left:22px;margin:0 0 10px;}\
+.gg-detail-science li{margin-bottom:4px;}\
+.gg-detail-science blockquote{border-left:4px solid #9CB89C;padding:8px 16px;margin:10px 0;background:rgba(156,184,156,0.08);border-radius:0 12px 12px 0;color:#7A7A7A;}\
+.gg-detail-science strong{font-weight:700;}\
+.gg-detail-science em{font-style:italic;}\
+.gg-detail-science img{max-width:100%;border-radius:12px;margin:10px 0;}\
+.gg-detail-science hr{border:none;border-top:1px solid rgba(0,0,0,0.1);margin:16px 0;}\
+.gg-detail-sources{margin-top:16px;padding:14px 16px;background:rgba(244,168,150,0.08);border-radius:14px;}\
+.gg-detail-sources-title{font-size:0.85rem;font-weight:700;color:#C08060;margin-bottom:8px;}\
+.gg-detail-source{font-size:0.82rem;color:#7A7A7A;line-height:1.6;padding:2px 0;}\
+.gg-detail-source a{color:#9CB89C;text-decoration:none;}\
+.gg-detail-source a:hover{text-decoration:underline;}\
+@media(max-width:768px){.gg-detail-card{padding:24px;}.gg-detail-title{font-size:1.3rem;}}\
+';
+    document.head.appendChild(style);
+  }
+
+  window.findMilestoneItem = function(id) {
+    var keys = ['0-1','1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9','9-10','vaccine','health','ceremony'];
+    for (var i = 0; i < keys.length; i++) {
+      var stage = MILESTONES_DATA[keys[i]];
+      if (!stage) continue;
+      for (var j = 0; j < stage.items.length; j++) {
+        if (stage.items[j].id === id) return stage.items[j];
+      }
+    }
+    return null;
+  };
+
+  window.findMilestoneByName = function(name) {
+    var keys = ['0-1','1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9','9-10','vaccine','health','ceremony'];
+    for (var i = 0; i < keys.length; i++) {
+      var stage = MILESTONES_DATA[keys[i]];
+      if (!stage) continue;
+      for (var j = 0; j < stage.items.length; j++) {
+        var it = stage.items[j];
+        var displayName = it.title || it.name;
+        if (displayName && displayName.indexOf(name) >= 0) return it;
+      }
+    }
+    return null;
+  };
+
+  function renderMilestoneDetailMarkdown(text) {
+    if (!text) return '';
+    if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+      if (typeof marked.setOptions === 'function') marked.setOptions({ breaks: true, gfm: true });
+      return DOMPurify.sanitize(typeof marked.parse === 'function' ? marked.parse(text) : marked(text));
+    }
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  window.showMilestoneDetail = function(cardEl, event) {
+    if (event) {
+      var t = event.target;
+      if (t.classList.contains('milestone-check') || t.closest('.milestone-check') || t.classList.contains('milestone-editor')) return;
+    }
+    var id = cardEl.getAttribute('data-milestone-id');
+    if (!id) return;
+    var item = findMilestoneItem(id);
+    if (!item) return;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'gg-detail-overlay';
+
+    var catHtml = item.category ? '<div class="gg-detail-category ' + (categoryClassMap[item.category] || 'category-health') + '">' + item.category + '</div>' : '';
+    var title = item.title || item.name || '';
+    var desc = item.desc || item.content || '';
+    var timeInfo = [];
+    if (item.suggestedTime) timeInfo.push('<span>📅 ' + item.suggestedTime + '</span>');
+    if (item.time) timeInfo.push('<span>⏰ ' + item.time + '</span>');
+    if (item.age) timeInfo.push('<span>👶 ' + item.age + '</span>');
+    if (item.form) timeInfo.push('<span>🎯 ' + item.form + '</span>');
+    if (item.cost && item.importance) timeInfo.push('<span>💰 ' + item.cost + ' · ' + item.importance + '</span>');
+    else if (item.importance) timeInfo.push('<span>' + item.importance + '</span>');
+    if (item.dose) timeInfo.push('<span>💉 ' + item.dose + '</span>');
+    var metaHtml = timeInfo.length > 0 ? '<div class="gg-detail-meta">' + timeInfo.join('') + '</div>' : '';
+    var descHtml = desc ? '<div class="gg-detail-desc">' + desc + '</div>' : '';
+    var noteHtml = item.note ? '<div class="gg-detail-desc" style="background:rgba(244,168,150,0.08);">💡 ' + item.note + '</div>' : '';
+
+    var scienceHtml = '';
+    if (item.scientificDetail) {
+      scienceHtml = '<div class="gg-detail-divider"></div>' +
+        '<div class="gg-detail-heading">📖 科学小知识</div>' +
+        '<div class="gg-detail-science">' + renderMilestoneDetailMarkdown(item.scientificDetail) + '</div>';
+    }
+
+    var sourcesHtml = '';
+    if (item.sources && item.sources.length > 0) {
+      var srcList = '';
+      for (var i = 0; i < item.sources.length; i++) {
+        var s = item.sources[i];
+        var srcUrl = s.url || '';
+        var srcName = s.name || s;
+        if (srcUrl) {
+          srcList += '<div class="gg-detail-source">· <a href="' + srcUrl + '" target="_blank" rel="noopener">' + srcName + '</a></div>';
+        } else {
+          srcList += '<div class="gg-detail-source">· ' + srcName + '</div>';
+        }
+      }
+      sourcesHtml = '<div class="gg-detail-sources"><div class="gg-detail-sources-title">📚 参考来源</div>' + srcList + '</div>';
+    }
+
+    overlay.innerHTML =
+      '<div class="gg-detail-card">' +
+        '<button class="gg-detail-close">&times;</button>' +
+        catHtml +
+        '<div class="gg-detail-title">' + title + '</div>' +
+        metaHtml +
+        descHtml +
+        noteHtml +
+        scienceHtml +
+        sourcesHtml +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.gg-detail-close').addEventListener('click', function() { overlay.remove(); });
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  };
+
+  window.showMilestoneDetailByName = function(milestoneName, event) {
+    if (event) {
+      var t = event.target;
+      if (t.classList.contains('milestone-check') || t.closest('.milestone-check') || t.classList.contains('milestone-editor')) return;
+    }
+    var item = findMilestoneByName(milestoneName);
+    if (!item) return;
+    var mockEl = document.createElement('div');
+    mockEl.setAttribute('data-milestone-id', item.id);
+    showMilestoneDetail(mockEl, null);
   };
 
   // ==================== Sub-page Auth Redirect ====================
@@ -673,6 +928,7 @@
   window.initGrowthGuardian = function() {
     migrateLegacyCheckedItems();
     injectAuthUI();
+    injectDetailOverlayCSS();
     if (typeof initSupabase === 'function') initSupabase();
   };
 

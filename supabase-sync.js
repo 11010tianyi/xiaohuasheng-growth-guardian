@@ -199,25 +199,30 @@
 
     var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
     var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
+    var idsToUpdate = [row.milestone_id];
 
-    if (row.checked) {
-      if (checkedItems.indexOf(row.milestone_id) === -1) {
-        checkedItems.push(row.milestone_id);
-      }
-    } else {
-      checkedItems = checkedItems.filter(function(id) { return id !== row.milestone_id; });
+    if (typeof ITEM_LINKS !== 'undefined' && ITEM_LINKS[row.milestone_id]) {
+      idsToUpdate = idsToUpdate.concat(ITEM_LINKS[row.milestone_id]);
     }
 
-    editorInfo[row.milestone_id] = {
-      phone: row.phone,
-      updated_at: row.updated_at,
-      checked: row.checked
-    };
+    idsToUpdate.forEach(function(id) {
+      if (row.checked) {
+        if (checkedItems.indexOf(id) === -1) {
+          checkedItems.push(id);
+        }
+      } else {
+        checkedItems = checkedItems.filter(function(i) { return i !== id; });
+      }
+      editorInfo[id] = {
+        phone: row.phone,
+        updated_at: row.updated_at,
+        checked: row.checked
+      };
+      updateSingleCard(id, row.checked, row.phone, row.updated_at);
+    });
 
     localStorage.setItem('checkedItems', JSON.stringify(checkedItems));
     localStorage.setItem('gg_editor_info', JSON.stringify(editorInfo));
-
-    updateSingleCard(row.milestone_id, row.checked, row.phone, row.updated_at);
     updateProgress();
   }
 
