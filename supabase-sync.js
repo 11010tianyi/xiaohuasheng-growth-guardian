@@ -99,7 +99,12 @@
         syncFromSupabase();
         return { success: true, message: result.data.message, isNew: result.data.is_new };
       } else {
-        return { success: false, message: (result.data && result.data.message) || '验证失败' };
+        var remaining = result.data && result.data.remaining_attempts;
+        var msg = (result.data && result.data.message) || '验证失败';
+        if (remaining !== null && remaining !== undefined && remaining >= 0) {
+          msg += '（剩余尝试次数: ' + remaining + '）';
+        }
+        return { success: false, message: msg };
       }
     } catch(e) {
       console.error('[Supabase] login error:', e);
@@ -139,9 +144,7 @@
   window.getSupabaseCheckedState = async function() {
     if (!_supabase) return null;
     try {
-      var result = await _supabase
-        .from('milestone_checks')
-        .select('milestone_id, checked, phone, updated_at');
+      var result = await _supabase.rpc('get_milestone_checks');
       if (result.data) {
         return result.data;
       }
@@ -164,7 +167,7 @@
         checkedItems.push(row.milestone_id);
       }
       editorInfo[row.milestone_id] = {
-        phone: row.phone,
+        phone: row.phone_masked || row.phone,
         updated_at: row.updated_at,
         checked: row.checked
       };
