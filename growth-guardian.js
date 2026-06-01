@@ -814,6 +814,46 @@
       sourcesHtml = '<div class="gg-detail-sources"><div class="gg-detail-sources-title">📚 参考来源</div>' + srcList + '</div>';
     }
 
+    var linkedHtml = '';
+    if (typeof ITEM_LINKS !== 'undefined' && ITEM_LINKS[id]) {
+      var linkedIds = ITEM_LINKS[id];
+      var linkedItems = [];
+      for (var li = 0; li < linkedIds.length; li++) {
+        if (linkedIds[li] === id) continue;
+        var liItem = findMilestoneItem(linkedIds[li]);
+        if (liItem && (liItem.scientificDetail || (liItem.sources && liItem.sources.length > 0))) {
+          linkedItems.push(liItem);
+        }
+      }
+      if (linkedItems.length > 0) {
+        linkedHtml = '<div class="gg-detail-divider"></div><div class="gg-detail-heading">🔗 关联信息</div>';
+        for (var ei = 0; ei < linkedItems.length; ei++) {
+          var el = linkedItems[ei];
+          var elTitle = el.title || el.name || '';
+          if (elTitle) {
+            linkedHtml += '<div style="font-size:0.9rem;font-weight:600;color:#4A4A4A;margin-top:10px;">📎 ' + elTitle + '</div>';
+          }
+          if (el.scientificDetail) {
+            linkedHtml += '<div class="gg-detail-science" style="margin-top:6px;">' + renderMilestoneDetailMarkdown(el.scientificDetail) + '</div>';
+          }
+          if (el.sources && el.sources.length > 0) {
+            var esrcList = '';
+            for (var si = 0; si < el.sources.length; si++) {
+              var es = el.sources[si];
+              var esUrl = es.url || '';
+              var esName = es.name || es;
+              if (esUrl) {
+                esrcList += '<div class="gg-detail-source">· <a href="' + esUrl + '" target="_blank" rel="noopener">' + esName + '</a></div>';
+              } else {
+                esrcList += '<div class="gg-detail-source">· ' + esName + '</div>';
+              }
+            }
+            linkedHtml += '<div class="gg-detail-sources" style="margin-top:8px;"><div class="gg-detail-sources-title">📚 参考来源</div>' + esrcList + '</div>';
+          }
+        }
+      }
+    }
+
     overlay.innerHTML =
       '<div class="gg-detail-card">' +
         '<button class="gg-detail-close">&times;</button>' +
@@ -824,6 +864,7 @@
         noteHtml +
         scienceHtml +
         sourcesHtml +
+        linkedHtml +
       '</div>';
 
     document.body.appendChild(overlay);
