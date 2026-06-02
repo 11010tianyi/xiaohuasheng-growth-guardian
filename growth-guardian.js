@@ -1329,6 +1329,15 @@
   function initVoiceCheckin() {
     injectVoiceCSS();
 
+    if (document.getElementById('gg-voice-fab')) {
+      return;
+    }
+
+    if (typeof isSupabaseLoggedIn === 'function' && !isSupabaseLoggedIn()) {
+      console.log('[Voice] Not logged in, skip FAB');
+      return;
+    }
+
     var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Recognition) {
       console.log('[Voice] SpeechRecognition not supported');
@@ -1478,6 +1487,8 @@
   }
 
   // ==================== Init ====================
+
+  window.initVoiceCheckin = initVoiceCheckin;
 
   window.initGrowthGuardian = function() {
     migrateLegacyCheckedItems();

@@ -312,9 +312,16 @@
         var identity = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(session.phone) : session.phoneMasked;
         statusEl.innerHTML = '<span class="auth-phone">' + identity + '</span> 已登录 <a href="javascript:void(0)" onclick="supabaseLogout()" class="auth-logout">退出</a>';
         statusEl.classList.add('logged-in');
+        if (typeof window.initVoiceCheckin === 'function') {
+          window.initVoiceCheckin();
+        }
       } else {
         statusEl.innerHTML = '<a href="javascript:void(0)" onclick="showAuthModal()" class="auth-login-link">🔐 登录</a>';
         statusEl.classList.remove('logged-in');
+        var voiceFab = document.getElementById('gg-voice-fab');
+        if (voiceFab) voiceFab.remove();
+        var voiceStatus = document.getElementById('gg-voice-status');
+        if (voiceStatus) voiceStatus.remove();
       }
     }
 
