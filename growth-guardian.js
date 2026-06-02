@@ -964,6 +964,519 @@
     }
   }
 
+  // ==================== Voice Check-in ====================
+
+  function getMilestoneIndex() {
+    var index = [];
+    var keys = ['0-1','1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9','9-10','vaccine','health','ceremony'];
+    for (var k = 0; k < keys.length; k++) {
+      var stage = MILESTONES_DATA[keys[k]];
+      if (!stage) continue;
+      for (var i = 0; i < stage.items.length; i++) {
+        var item = stage.items[i];
+        index.push({ id: item.id, title: item.title || item.name || '' });
+      }
+    }
+    return index;
+  }
+
+  function injectVoiceCSS() {
+    if (document.getElementById('gg-voice-style')) return;
+    var style = document.createElement('style');
+    style.id = 'gg-voice-style';
+    style.textContent =
+      '.gg-voice-fab{position:fixed;bottom:100px;right:20px;z-index:3000;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7CB87C,#5A9A5A);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 16px rgba(90,154,90,0.4);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s;touch-action:manipulation;}'
+      + '.gg-voice-fab:active{transform:scale(0.92);}'
+      + '.gg-voice-fab.recording{background:linear-gradient(135deg,#D47373,#B85C5C);box-shadow:0 4px 20px rgba(212,115,115,0.5);animation:gg-voice-pulse 1s ease-in-out infinite;}'
+      + '@keyframes gg-voice-pulse{0%,100%{box-shadow:0 4px 16px rgba(212,115,115,0.4);}50%{box-shadow:0 4px 28px rgba(212,115,115,0.7);}}'
+      + '.gg-voice-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);backdrop-filter:blur(5px);z-index:4000;display:flex;align-items:center;justify-content:center;padding:20px;}'
+      + '.gg-voice-panel{background:#fff;border-radius:20px;max-width:460px;width:100%;max-height:80vh;overflow-y:auto;padding:28px 24px 20px;box-shadow:0 8px 40px rgba(0,0,0,0.15);}'
+      + '.gg-voice-panel h3{margin:0 0 16px;font-size:1.2rem;font-weight:700;color:#2C2C2C;text-align:center;}'
+      + '.gg-voice-transcript{background:#F5F5F5;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:0.95rem;color:#555;line-height:1.5;word-break:break-word;}'
+      + '.gg-voice-transcript strong{color:#2C2C2C;}'
+      + '.gg-voice-summary{font-size:0.9rem;color:#7A7A7A;margin-bottom:16px;text-align:center;font-style:italic;}'
+      + '.gg-voice-match-list{list-style:none;padding:0;margin:0 0 20px;}'
+      + '.gg-voice-match-list li{padding:10px 14px;margin-bottom:6px;background:#F0F8F0;border-radius:10px;font-size:0.95rem;color:#2C2C2C;display:flex;align-items:center;gap:8px;}'
+      + '.gg-voice-match-list li::before{content:"✅";font-size:0.85rem;}'
+      + '.gg-voice-match-list li .gg-voice-badge{font-size:0.7rem;background:#D4E8D4;color:#4A8A4A;padding:2px 8px;border-radius:6px;white-space:nowrap;}'
+      + '.gg-voice-actions{display:flex;gap:10px;}'
+      + '.gg-voice-actions button{flex:1;padding:12px;border:none;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;font-family:Nunito,sans-serif;transition:opacity .2s;touch-action:manipulation;}'
+      + '.gg-voice-btn-primary{background:linear-gradient(135deg,#9CB89C,#C5D5C0);color:#fff;}'
+      + '.gg-voice-btn-secondary{background:#E8E8E8;color:#555;}'
+      + '.gg-voice-btn-danger{background:linear-gradient(135deg,#D47373,#E8A0A0);color:#fff;}'
+      + '.gg-voice-btn-save{background:linear-gradient(135deg,#7CB8D4,#A0D0E8);color:#fff;}'
+      + '.gg-voice-btn-done{background:#D0D0D0;color:#888;cursor:default;}'
+      + '.gg-voice-fallback-hint{font-size:0.85rem;color:#999;text-align:center;margin-bottom:16px;padding:12px;background:#FFF8E1;border-radius:10px;}'
+      + '.gg-voice-loading{text-align:center;padding:30px 0;color:#7A7A7A;font-size:0.95rem;}'
+      + '.gg-voice-loading .gg-spinner{display:inline-block;width:24px;height:24px;border:3px solid #E8E8E8;border-top-color:#9CB89C;border-radius:50%;animation:gg-spin .8s linear infinite;margin-bottom:8px;}'
+      + '@keyframes gg-spin{to{transform:rotate(360deg);}}'
+      + '.gg-voice-diary-preview{background:#F5F0FF;border-radius:12px;padding:14px 16px;margin-bottom:16px;border-left:3px solid #A080D0;}'
+      + '.gg-voice-diary-section{margin-bottom:10px;font-size:0.9rem;color:#444;line-height:1.5;}'
+      + '.gg-voice-diary-section:last-child{margin-bottom:0;}'
+      + '.gg-voice-diary-section strong{color:#3A2A5A;}'
+      + '.gg-voice-tag{display:inline-block;padding:2px 8px;background:#E0D4F0;color:#5A3A8A;border-radius:10px;font-size:0.75rem;margin:2px 3px;}'
+      + '.gg-voice-status{position:fixed;bottom:170px;left:50%;transform:translateX(-50%);background:#2d5016;color:#fff;padding:10px 24px;border-radius:30px;font-size:0.9rem;z-index:3999;opacity:0;transition:opacity .3s;box-shadow:0 4px 20px rgba(0,0,0,0.15);pointer-events:none;white-space:nowrap;}'
+      + '.gg-voice-status.show{opacity:1;}';
+    document.head.appendChild(style);
+  }
+
+  function getTranscriptFromResult(result) {
+    var text = '';
+    if (typeof result === 'string') text = result;
+    else if (result && result.results) {
+      for (var i = 0; i < result.results.length; i++) {
+        if (result.results[i].isFinal) {
+          text += result.results[i][0].transcript;
+        }
+      }
+    }
+    return text.trim();
+  }
+
+  function formatNowForDiary() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    var h = String(d.getHours()).padStart(2, '0');
+    var min = String(d.getMinutes()).padStart(2, '0');
+    return y + '-' + m + '-' + dd + ' ' + h + ':' + min;
+  }
+
+  function formatTodayForDiary() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + dd;
+  }
+
+  window.saveVoiceDiaryEntry = async function(content, tags) {
+    var supabase = typeof window._getSupabaseInstance === 'function' ? window._getSupabaseInstance() : null;
+    if (!supabase) { showToast('Supabase 未初始化'); return false; }
+
+    var session = null;
+    try {
+      var raw = localStorage.getItem('gg_session');
+      if (raw) session = JSON.parse(raw);
+    } catch(e) {}
+
+    if (!session || !session.phone || !session.pinHash) {
+      showToast('请先登录');
+      if (typeof showAuthModal === 'function') showAuthModal();
+      return false;
+    }
+
+    var entryDate = formatTodayForDiary();
+    var mood = '';
+    var photoPaths = [];
+    if (!tags) tags = ['语音记录'];
+
+    var result = await supabase.rpc('create_diary_entry', {
+      p_phone: session.phone,
+      p_pin_hash: session.pinHash,
+      p_content: content,
+      p_photo_paths: photoPaths,
+      p_entry_date: entryDate,
+      p_mood: mood,
+      p_tags: tags
+    });
+
+    if (result.error) {
+      console.error('[Voice] Diary save error:', result.error);
+      showToast('日记保存失败');
+      return false;
+    }
+
+    if (result.data && result.data.success) {
+      showToast('已保存到日记');
+      return true;
+    } else {
+      showToast(result.data?.message || '日记保存失败');
+      return false;
+    }
+  };
+
+  window.batchToggleMilestones = async function(ids) {
+    var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
+    var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
+    var phone = typeof getCurrentPhoneRaw === 'function' ? getCurrentPhoneRaw() : '';
+    var now = new Date().toISOString();
+    var changed = 0;
+
+    for (var i = 0; i < ids.length; i++) {
+      var id = ids[i];
+      var isAlready = checkedItems.indexOf(id) !== -1;
+      if (isAlready) continue;
+
+      checkedItems.push(id);
+      editorInfo[id] = { phone: phone, updated_at: now, checked: true };
+      toggleLinkedItems(ITEM_LINKS[id], true);
+
+      var el = document.querySelector('.milestone-check[data-id="' + id + '"]');
+      if (el) {
+        el.classList.add('checked');
+        var card = el.closest('.milestone-card');
+        if (card) {
+          var eSpan = card.querySelector('.milestone-editor');
+          if (eSpan && phone) {
+            eSpan.textContent = (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(phone) : phone) + ' ' + (typeof formatEditorTime === 'function' ? formatEditorTime(now) : '');
+            eSpan.style.display = '';
+          }
+        }
+      }
+
+      if (typeof supabaseToggle === 'function') {
+        try { await supabaseToggle(id, true); } catch(e) { console.error('[Voice] toggle fail:', id, e); }
+      }
+      changed++;
+    }
+
+    localStorage.setItem('checkedItems', JSON.stringify(checkedItems));
+    localStorage.setItem('gg_editor_info', JSON.stringify(editorInfo));
+    updateProgress();
+
+    if (changed > 0) {
+      showToast('已打卡 ' + changed + ' 项');
+    }
+    return changed;
+  };
+
+  function buildVoiceOverlay(html) {
+    var overlay = document.createElement('div');
+    overlay.className = 'gg-voice-overlay';
+    overlay.innerHTML = '<div class="gg-voice-panel">' + html + '</div>';
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.remove();
+    });
+    return overlay;
+  }
+
+  function showVoiceConfirm(transcript, result) {
+    var matched = result.matched || [];
+    var summary = result.summary || '';
+    var diary = result.diary || {};
+
+    var matchedHtml = '';
+    if (matched.length > 0) {
+      matchedHtml = '<ul class="gg-voice-match-list">';
+      for (var i = 0; i < matched.length; i++) {
+        matchedHtml += '<li>' + matched[i].title + ' <span class="gg-voice-badge">' + matched[i].id + '</span></li>';
+      }
+      matchedHtml += '</ul>';
+    }
+
+    var diaryPreviewHtml = '';
+    if (diary.summary) {
+      diaryPreviewHtml = '<div class="gg-voice-diary-preview">'
+        + '<div class="gg-voice-diary-section"><strong>📝 提炼：</strong>' + escapeHtml(diary.summary) + '</div>'
+        + (diary.creative_response ? '<div class="gg-voice-diary-section"><strong>✨ 创作：</strong><br>' + escapeHtml(diary.creative_response).replace(/\n/g, '<br>') + '</div>' : '')
+        + '<div class="gg-voice-diary-section"><strong>🤔 亲子思考：</strong>' + escapeHtml(diary.aristotle_question) + '</div>'
+        + (diary.tags && diary.tags.length > 0 ? '<div class="gg-voice-diary-section"><strong>🏷️ 标签：</strong>' + diary.tags.map(function(t) { return '<span class="gg-voice-tag">' + escapeHtml(t) + '</span>'; }).join(' ') + '</div>' : '')
+        + '</div>';
+    }
+
+    function buildTags(baseTags, matchedItems) {
+      var tags = baseTags && baseTags.length > 0 ? baseTags.slice() : [];
+      if (tags.indexOf('语音记录') === -1) tags.unshift('语音记录');
+      for (var i = 0; i < matchedItems.length; i++) {
+        var msTag = '📌 ' + matchedItems[i].title;
+        if (tags.indexOf(msTag) === -1) tags.push(msTag);
+      }
+      return tags;
+    }
+
+    function buildDiaryContent(matchedItems) {
+      var now = formatNowForDiary();
+      var lines = ['## 🎤 语音记录', '', '**语音原文**：' + transcript, '', '**记录时间**：' + now, ''];
+      if (matchedItems.length > 0) {
+        lines.push('**✅ 打卡**：' + matchedItems.map(function(m) { return m.title; }).join('、'));
+        lines.push('');
+      }
+      if (diary.summary) {
+        lines.push('**📝 提炼**：' + diary.summary);
+        lines.push('');
+      }
+      if (diary.creative_response) {
+        lines.push('**✨ 创作**：');
+        lines.push('');
+        lines.push(diary.creative_response);
+        lines.push('');
+      }
+      if (diary.aristotle_question) {
+        lines.push('**🤔 亲子思考**：' + diary.aristotle_question);
+        lines.push('');
+      }
+      return lines.join('\n');
+    }
+
+    var ids = matched.map(function(m) { return m.id; });
+
+    var buttonsHtml = '';
+    if (matched.length > 0) {
+      buttonsHtml = '<button class="gg-voice-btn-secondary" onclick="this.closest(\'.gg-voice-overlay\').remove()">取消</button>'
+        + '<button class="gg-voice-btn-save" id="gg-voice-diary-btn">📝 保存到日记</button>'
+        + '<button class="gg-voice-btn-primary" id="gg-voice-milestone-btn">确认打卡 ' + matched.length + ' 项</button>';
+    } else {
+      buttonsHtml = '<button class="gg-voice-btn-secondary" onclick="this.closest(\'.gg-voice-overlay\').remove()">取消</button>'
+        + '<button class="gg-voice-btn-primary" id="gg-voice-milestone-btn">保存到日记</button>';
+    }
+
+    var overlay = buildVoiceOverlay(
+      '<h3>🎤 语音记录</h3>'
+      + '<div class="gg-voice-transcript"><strong>你说：</strong>' + escapeHtml(transcript) + '</div>'
+      + (summary ? '<div class="gg-voice-summary">' + escapeHtml(summary) + '</div>' : '')
+      + matchedHtml
+      + diaryPreviewHtml
+      + '<div class="gg-voice-actions" style="flex-wrap:wrap;">'
+      + buttonsHtml
+      + '</div>'
+    );
+
+    document.body.appendChild(overlay);
+
+    var done = { milestone: false, diary: false };
+
+    function tryCloseOverlay() {
+      if (done.milestone && done.diary) {
+        overlay.remove();
+      }
+    }
+
+    document.getElementById('gg-voice-milestone-btn').addEventListener('click', async function() {
+      var btn = this;
+      btn.textContent = '保存中...';
+      btn.disabled = true;
+      if (matched.length > 0) {
+        await window.batchToggleMilestones(ids);
+        btn.className = 'gg-voice-btn-done';
+        btn.textContent = '✅ 已打卡';
+        done.milestone = true;
+        tryCloseOverlay();
+      } else {
+        var tags = buildTags(diary.tags, []);
+        var mdContent = buildDiaryContent([]);
+        await window.saveVoiceDiaryEntry(mdContent, tags);
+        overlay.remove();
+      }
+    });
+
+    var diaryBtn = document.getElementById('gg-voice-diary-btn');
+    if (diaryBtn) {
+      diaryBtn.addEventListener('click', async function() {
+        var btn = this;
+        btn.textContent = '保存中...';
+        btn.disabled = true;
+        var tags = buildTags(diary.tags, matched);
+        var mdContent = buildDiaryContent(matched);
+        await window.saveVoiceDiaryEntry(mdContent, tags);
+        btn.className = 'gg-voice-btn-done';
+        btn.textContent = '✅ 已保存';
+        done.diary = true;
+        tryCloseOverlay();
+      });
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function handleVoiceTranscript(text) {
+    console.log('[Voice] handleVoiceTranscript called, text:', JSON.stringify(text));
+    if (!text) {
+      showToast('未识别到语音，请重试');
+      return;
+    }
+
+    var overlay = buildVoiceOverlay(
+      '<div class="gg-voice-loading"><div class="gg-spinner"></div>正在解析...</div>'
+    );
+    document.body.appendChild(overlay);
+
+    var index = getMilestoneIndex();
+    var funcUrl = SUPABASE_CONFIG.url.replace(/\/+$/, '') + '/functions/v1/parse-milestones';
+
+    fetch(funcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_CONFIG.anonKey
+      },
+      body: JSON.stringify({
+        transcript: text,
+        milestones: index
+      })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(result) {
+      overlay.remove();
+      if (result.error) {
+        showToast('解析失败，请稍后重试');
+        console.error('[Voice] Parse error:', result);
+        return;
+      }
+      showVoiceConfirm(text, result);
+    })
+    .catch(function(err) {
+      overlay.remove();
+      showToast('网络请求失败，请检查网络');
+      console.error('[Voice] Fetch error:', err);
+    });
+  }
+
+  function initVoiceCheckin() {
+    injectVoiceCSS();
+
+    var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      console.log('[Voice] SpeechRecognition not supported');
+      return;
+    }
+
+    var fab = document.createElement('button');
+    fab.className = 'gg-voice-fab';
+    fab.id = 'gg-voice-fab';
+    fab.innerHTML = '🎤';
+    fab.title = '语音打卡';
+    document.body.appendChild(fab);
+
+    var statusEl = document.createElement('div');
+    statusEl.className = 'gg-voice-status';
+    statusEl.textContent = '🎤 聆听中...';
+    document.body.appendChild(statusEl);
+
+    var recognizer = null;
+    var isListening = false;
+    var finalTranscript = '';
+    var interimTranscript = '';
+    var silenceTimer = null;
+
+    function showVoiceStatus() {
+      statusEl.classList.add('show');
+    }
+
+    function hideVoiceStatus() {
+      statusEl.classList.remove('show');
+    }
+
+    function clearSilenceTimer() {
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+      }
+    }
+
+    function resetSilenceTimer() {
+      clearSilenceTimer();
+      silenceTimer = setTimeout(function() {
+        console.log('[Voice] Auto-stop: silence timeout');
+        hideVoiceStatus();
+        stopListening();
+        showToast('已自动停止（5秒无语音）');
+      }, 5000);
+    }
+
+    function startListening() {
+      if (isListening) return;
+      finalTranscript = '';
+      interimTranscript = '';
+      try {
+        recognizer = new Recognition();
+        recognizer.lang = 'zh-CN';
+        recognizer.continuous = true;
+        recognizer.interimResults = true;
+
+        recognizer.onstart = function() {
+          isListening = true;
+          fab.classList.add('recording');
+          fab.innerHTML = '⏹';
+          showVoiceStatus();
+          resetSilenceTimer();
+        };
+
+        recognizer.onerror = function(event) {
+          console.error('[Voice] Recognition error:', event.error);
+          isListening = false;
+          fab.classList.remove('recording');
+          fab.innerHTML = '🎤';
+          hideVoiceStatus();
+          clearSilenceTimer();
+          if (event.error === 'not-allowed') {
+            showToast('请允许麦克风权限');
+          } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+            showToast('语音识别出错，请重试');
+          }
+        };
+
+        recognizer.onend = function() {
+          console.log('[Voice] onend fired');
+          isListening = false;
+          fab.classList.remove('recording');
+          fab.innerHTML = '🎤';
+          hideVoiceStatus();
+          clearSilenceTimer();
+        };
+
+        recognizer.onresult = function(event) {
+          console.log('[Voice] onresult fired, count:', event.results.length, 'isFinal:', event.results[event.results.length-1].isFinal, 'text:', event.results[event.results.length-1][0].transcript);
+          var hasSpeech = false;
+          for (var i = event.resultIndex; i < event.results.length; i++) {
+            var result = event.results[i];
+            if (result.isFinal) {
+              finalTranscript += result[0].transcript;
+            } else {
+              interimTranscript = result[0].transcript;
+            }
+            if (result[0].transcript.trim()) {
+              hasSpeech = true;
+            }
+          }
+          if (hasSpeech) {
+            resetSilenceTimer();
+          }
+        };
+
+        recognizer.start();
+      } catch(e) {
+        console.error('[Voice] Start error:', e);
+        showToast('启动语音识别失败');
+      }
+    }
+
+    function stopListening() {
+      console.log('[Voice] stopListening called');
+      isListening = false;
+      fab.classList.remove('recording');
+      fab.innerHTML = '🎤';
+      hideVoiceStatus();
+      clearSilenceTimer();
+      if (recognizer) {
+        var r = recognizer;
+        recognizer = null;
+        try {
+          console.log('[Voice] calling recognizer.stop()');
+          r.stop();
+        } catch(e) {
+          console.error('[Voice] stop() threw:', e);
+          try { r.abort(); } catch(e2) { console.error('[Voice] abort() also threw:', e2); }
+        }
+      }
+      setTimeout(function() {
+        handleVoiceTranscript(finalTranscript || interimTranscript);
+      }, 400);
+    }
+
+    fab.addEventListener('click', function() {
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    });
+  }
+
   // ==================== Init ====================
 
   window.initGrowthGuardian = function() {
@@ -971,6 +1484,7 @@
     injectAuthUI();
     injectDetailOverlayCSS();
     if (typeof initSupabase === 'function') initSupabase();
+    initVoiceCheckin();
   };
 
 })();
