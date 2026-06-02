@@ -20,18 +20,24 @@
 ├── supabase-config.js    # Supabase 配置（用户填入 url + anonKey）
 ├── supabase-sync.js      # Supabase 实时同步模块（登录/同步/Realtime）
 ├── supabase-setup.sql    # 数据库初始化脚本（在 Supabase SQL Editor 中运行）
+├── supabase/                     # Supabase Edge Functions
+│   ├── config.toml               # Functions 配置
+│   └── functions/parse-milestones/# AI 语音打卡边缘函数（DeepSeek）
 ├── docs/                        # 文档
 │   ├── supabase-setup.md        # Supabase 配置与数据库方案
 │   ├── dary-share-plan.md       # 日记共享方案（历史参考）
 │   ├── ITEM_LINKS.md            # 跨区同步映射表（里程碑↔疫苗/体检/仪式）
-│   └── v4.1.0-milestone-card-overlay.md # 4.1.0 版本变更说明（详情弹窗、日记关联）
+│   ├── v4.1.0-milestone-card-overlay.md # 4.1.0 版本变更说明（详情弹窗、日记关联）
+│   └── v5.0.0-voice-checkin.md        # 5.0.0 版本变更说明（语音打卡、AI 日志增强）
 └── push-to-github.sh            # GitHub Pages 部署脚本
 ```
 
 ## 功能
 
+- **语音打卡**：点击 FAB 按钮录音，AI 自动匹配里程碑（331+ 项），语音转日志并增强（摘要、创作、亲子提问）
 - **里程碑追踪**：打勾标记已完成项，进度条实时更新
 - **里程碑关联日记**：日记编辑器中可选关联里程碑，保存后自动编码为 `📌` 标签，查看日记时展示关联里程碑的科学解释
+- **里程碑卡片详情弹窗**：点击卡片弹出 Markdown 渲染的科学解释 + 权威来源链接（331+ 条数据全覆盖）
 - **里程碑卡片详情弹窗**：点击卡片弹出 Markdown 渲染的科学解释 + 权威来源链接（331+ 条数据全覆盖）
 - **跨区自动同步**：同一事项（如"42天体检"）在里程碑页和体检/疫苗/仪式页之间自动同步勾选状态
 - **成长日记**：家人共享日记，支持 Markdown 编辑/预览、照片、心情、标签
@@ -51,7 +57,8 @@
 ## 技术栈
 
 - 纯静态 HTML/CSS/JS，无构建步骤，直接部署到 GitHub Pages
-- [Supabase JS 2.x](https://supabase.com/) — 实时同步 + RPC 认证（~50KB）
+- [Supabase JS 2.x](https://supabase.com/) — 实时同步 + RPC 认证 + Edge Functions（~50KB）
+- [DeepSeek Chat API](https://platform.deepseek.com/) — AI 语义分析 + 日志增强
 - [SheetJS 0.18.5](https://cdn.jsdelivr.net/npm/xlsx@0.18.5/) — 按需加载，客户端生成 Excel
 - [LZ-String 1.5.0](https://cdn.jsdelivr.net/npm/lz-string@1.5.0/) — URL hash 压缩
 - [marked.js](https://marked.js.org/) — Markdown 渲染
