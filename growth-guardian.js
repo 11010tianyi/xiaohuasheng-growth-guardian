@@ -3,6 +3,10 @@
 (function() {
   'use strict';
 
+  // ==================== Configuration ====================
+
+  var EDGE_FUNCTION_BASE = SUPABASE_CONFIG.url.replace(/\/+$/, '') + '/functions/v1';
+
   // ==================== ID Management ====================
 
   function getAllMilestoneIds() {
@@ -549,6 +553,8 @@
 
     container.innerHTML = html;
     restoreCheckedState();
+    // Fire-and-forget: apply deadline-based status colors from Edge Function
+    window.applyMilestoneStatus();
   };
 
   // ==================== Render Vaccine & Health ====================
@@ -1486,6 +1492,126 @@
     });
   }
 
+  // ==================== Edge Function Client ====================
+
+  function findMilestoneById(id) {
+    for (var k in MILESTONES_DATA) {
+      var phase = MILESTONES_DATA[k];
+      if (!phase || !phase.items) continue;
+      for (var i = 0; i < phase.items.length; i++) {
+        if (phase.items[i].id === id) return phase.items[i];
+      }
+    }
+    return null;
+  }
+
+  window.fetchBabyStatus = async function(milestoneIds) {
+    if (!milestoneIds || milestoneIds.length === 0) return {};
+    try {
+      var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
+      var milestones = [];
+      for (var i = 0; i < milestoneIds.length; i++) {
+        var item = findMilestoneById(milestoneIds[i]);
+        if (item) milestones.push({ id: item.id, time: item.time || '', suggestedTime: item.suggestedTime || '' });
+      }
+      if (milestones.length === 0) return {};
+      var resp = await fetch(EDGE_FUNCTION_BASE + '/get-baby-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ milestones: milestones, checkedItems: checkedItems })
+      });
+      if (!resp.ok) return {};
+      return await resp.json();
+    } catch (e) {
+      console.error('[MilestoneStatus] fetch failed:', e);
+      return {};
+    }
+  };
+
+  window.applyMilestoneStatus = function() {
+    var cards = document.querySelectorAll('.milestone-card[data-milestone-id]');
+    if (cards.length === 0) return;
+    var ids = [];
+    cards.forEach(function(c) { ids.push(c.getAttribute('data-milestone-id')); });
+    window.fetchBabyStatus(ids).then(function(statuses) {
+      cards.forEach(function(card) {
+        var id = card.getAttribute('data-milestone-id');
+        var st = statuses[id];
+        if (st && st !== 'normal') {
+          card.classList.add('milestone-' + st);
+        }
+      });
+    });
+  };
+
+  // ==================== Bullet Screen (Index Page) ====================
+
+  window.initBulletScreen = function() {
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+
+    // Collect ALL milestone IDs that have time info
+    var allIds = [];
+    for (var k in MILESTONES_DATA) {
+      var phase = MILESTONES_DATA[k];
+      if (!phase || !phase.items) continue;
+      for (var i = 0; i < phase.items.length; i++) {
+        var item = phase.items[i];
+        if (item.time || item.suggestedTime) allIds.push(item.id);
+      }
+    }
+    if (allIds.length === 0) return;
+
+    var checkedItems = JSON.parse(localStorage.getItem('checkedItems') || '[]');
+    var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
+
+    window.fetchBabyStatus(allIds).then(function(statuses) {
+      var html = '<div class="bullet-screen"><div class="bullet-track">';
+      var entries = [];
+
+      // Show checked milestones
+      checkedItems.forEach(function(id) {
+        var item = findMilestoneById(id);
+        if (!item) return;
+        var info = editorInfo[id];
+        var person = info && info.phone
+          ? (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(info.phone) : info.phone)
+          : '';
+        var checkTime = info && info.updated_at
+          ? info.updated_at.slice(0, 10)
+          : '';
+        var st = statuses[id] || 'checked';
+        var cls = 'bullet-item bullet-' + st;
+        var label = item.title + ' (📅 ' + (item.suggestedTime || '') + ' ⏰ ' + (item.time || '') + ')';
+        if (person) label += ' - ' + person;
+        if (checkTime) label += ' - ' + checkTime;
+        entries.push('<span class="' + cls + '">' + label + '</span>');
+      });
+
+      // Show expiring / expired milestones (not yet checked)
+      for (var id in statuses) {
+        if (checkedItems.indexOf(id) !== -1) continue;
+        var st = statuses[id];
+        if (st !== 'expiring' && st !== 'expired') continue;
+        var item = findMilestoneById(id);
+        if (!item) continue;
+        var cls = 'bullet-item bullet-' + st;
+        var label = item.title + ' (📅 ' + (item.suggestedTime || '') + ' ⏰ ' + (item.time || '') + ')';
+        entries.push('<span class="' + cls + '">' + label + '</span>');
+      }
+
+      if (entries.length === 0) return;
+      // Duplicate entries for seamless loop
+      html += entries.join(' &nbsp;&nbsp;&nbsp; ') + ' &nbsp;&nbsp;&nbsp; ';
+      html += entries.join(' &nbsp;&nbsp;&nbsp; ');
+      html += '</div></div>';
+
+      var existing = hero.querySelector('.bullet-screen');
+      if (existing) existing.remove();
+      hero.insertAdjacentHTML('beforeend', html);
+    });
+  };
+
   // ==================== Init ====================
 
   window.initVoiceCheckin = initVoiceCheckin;
@@ -1496,6 +1622,7 @@
     injectDetailOverlayCSS();
     if (typeof initSupabase === 'function') initSupabase();
     initVoiceCheckin();
+    window.initBulletScreen();
   };
 
 })();

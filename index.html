@@ -160,6 +160,7 @@
         .hero {
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 120px 60px 80px;
@@ -536,6 +537,14 @@
                 margin: 0 20px;
             }
         }
+        /* Bullet screen */
+        .bullet-screen { width: 100%; overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 20px; }
+        .bullet-track { display: inline-block; animation: bulletScroll 60s linear infinite; font-size: 0.85rem; }
+        .bullet-item { display: inline-block; margin: 0 4px; padding: 4px 12px; border-radius: 12px; background: rgba(255,255,255,0.7); }
+        .bullet-checked { color: #2e7d32; }
+        .bullet-expiring { color: #f57f17; }
+        .bullet-expired { color: #c62828; }
+        @keyframes bulletScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
     </style>
 </head>
 <body>

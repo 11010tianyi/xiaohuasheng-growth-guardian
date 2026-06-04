@@ -16,7 +16,7 @@
 ├── growth-guardian.js    # 共享逻辑：打勾、恢复、分享、Excel 导出、认证 UI
 ├── family-config.js      # 家人身份配置（手机尾号→称呼映射）
 ├── diary.js              # 日记模块（CRUD、照片、心情标签、Markdown）
-├── music-player.js       # 全局音乐播放器（随机切换轻音乐）
+├── music-player.js       # 全局音乐播放器（四主题 18 首曲目，主题色卡片）
 ├── supabase-config.js    # Supabase 配置（用户填入 url + anonKey）
 ├── supabase-sync.js      # Supabase 实时同步模块（登录/同步/Realtime）
 ├── supabase-setup.sql    # 数据库初始化脚本（在 Supabase SQL Editor 中运行）
@@ -24,11 +24,12 @@
 │   ├── config.toml               # Functions 配置
 │   └── functions/parse-milestones/# AI 语音打卡边缘函数（DeepSeek）
 ├── docs/                        # 文档
-│   ├── supabase-setup.md        # Supabase 配置与数据库方案
-│   ├── dary-share-plan.md       # 日记共享方案（历史参考）
-│   ├── ITEM_LINKS.md            # 跨区同步映射表（里程碑↔疫苗/体检/仪式）
+│   ├── supabase-setup.md              # Supabase 配置与数据库方案
+│   ├── dary-share-plan.md             # 日记共享方案（历史参考）
+│   ├── ITEM_LINKS.md                  # 跨区同步映射表（里程碑↔疫苗/体检/仪式）
 │   ├── v4.1.0-milestone-card-overlay.md # 4.1.0 版本变更说明（详情弹窗、日记关联）
-│   └── v5.0.0-voice-checkin.md        # 5.0.0 版本变更说明（语音打卡、AI 日志增强）
+│   ├── v5.0.0-voice-checkin.md        # 5.0.0 版本变更说明（语音打卡、AI 日志增强）
+│   └── v5.1.00-music-themes.md        # 5.1.00 版本变更说明（四主题音乐播放器、主题色卡片）
 └── push-to-github.sh            # GitHub Pages 部署脚本
 ```
 
@@ -42,7 +43,7 @@
 - **跨区自动同步**：同一事项（如"42天体检"）在里程碑页和体检/疫苗/仪式页之间自动同步勾选状态
 - **成长日记**：家人共享日记，支持 Markdown 编辑/预览、照片、心情、标签
 - **日记照片墙**：宽屏两侧自动滚动照片瀑布，带上传人时间戳，点击放大
-- **背景音乐**：全局音乐播放器，3 首轻音乐随机切换，默认关闭
+- **背景音乐**：全局音乐播放器，四主题 18 首曲目（原始/儿童/轻音乐/白噪音），可切换主题，带主题色卡片指示器，偏好持久化
 - **家人身份**：手机尾号自动映射为称呼（花爸爸、花妈妈、花奶奶），跨日记和里程碑统一显示
 - **全页登录/退出**：任何页面均可登录和退出，非主人日记不可编辑/删除
 - **手机号 + PIN 认证**：自设 PIN 码（免费，无需短信服务商），首次输入自动注册
