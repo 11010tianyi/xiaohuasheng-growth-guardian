@@ -208,6 +208,9 @@
   // ==================== Restore State ====================
 
   function restoreCheckedState() {
+    if (typeof window._triggerSyncFromSupabase === 'function') {
+      window._triggerSyncFromSupabase();
+    }
     var hashChecked = loadFromURLHash();
     if (hashChecked !== null) {
       localStorage.setItem('checkedItems', JSON.stringify(hashChecked));
@@ -220,6 +223,8 @@
       var mid = el.getAttribute('data-id');
       if (checkedSet[mid]) {
         el.classList.add('checked');
+      } else {
+        el.classList.remove('checked');
       }
       var card = el.closest('.milestone-card');
       if (card) {
@@ -237,6 +242,7 @@
     });
     updateProgress();
   }
+  window.restoreCheckedState = restoreCheckedState;
 
   // ==================== URL Hash Encoding ====================
 

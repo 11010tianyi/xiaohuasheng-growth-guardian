@@ -5,6 +5,8 @@
 
   var _supabase = null;
   var _channel = null;
+  var _syncInProgress = false;
+  var _syncCompleted = false;
 
   // ==================== SHA-256 Hash ====================
 
@@ -63,7 +65,16 @@
       console.log('[Supabase] 初始化成功');
       subscribeRealtime();
       restoreAuthUI();
+      syncFromSupabase().catch(function(err) {
+        console.error('[Supabase] syncFromSupabase 失败:', err);
+      });
       window._getSupabaseInstance = function() { return _supabase; };
+      window._triggerSyncFromSupabase = function() {
+        if (!_syncInProgress && !_syncCompleted) {
+          return syncFromSupabase();
+        }
+        return Promise.resolve();
+      };
     } catch(e) {
       console.error('[Supabase] 初始化失败:', e);
     }
@@ -96,7 +107,7 @@
         var masked = result.data.phone_masked || maskPhone(phone);
         saveSession(phone, masked, pinHash);
         restoreAuthUI();
-        syncFromSupabase();
+        await syncFromSupabase();
         return { success: true, message: result.data.message, isNew: result.data.is_new };
       } else {
         var remaining = result.data && result.data.remaining_attempts;
@@ -157,8 +168,16 @@
   // ==================== Sync from Supabase ====================
 
   async function syncFromSupabase() {
+    if (_syncInProgress) return;
+    _syncInProgress = true;
+    console.log('[Supabase] 开始同步');
     var rows = await getSupabaseCheckedState();
-    if (!rows) return;
+    if (!rows) {
+      console.log('[Supabase] 同步完成：无远程数据');
+      _syncInProgress = false;
+      _syncCompleted = true;
+      return;
+    }
 
     var checkedItems = [];
     var editorInfo = {};
@@ -175,7 +194,12 @@
 
     localStorage.setItem('checkedItems', JSON.stringify(checkedItems));
     localStorage.setItem('gg_editor_info', JSON.stringify(editorInfo));
-    restoreCheckedState();
+    console.log('[Supabase] 同步完成，已同步 ' + rows.length + ' 条记录');
+    _syncInProgress = false;
+    _syncCompleted = true;
+    if (typeof window.restoreCheckedState === 'function') {
+      window.restoreCheckedState();
+    }
   }
 
   // ==================== Realtime Subscription ====================
