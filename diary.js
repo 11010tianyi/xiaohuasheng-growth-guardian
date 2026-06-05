@@ -6,6 +6,8 @@
   // ==================== State ====================
 
   var _entries = [];
+  var _photoShuffle = null;
+  var _photoUrlCache = {};
   var _currentEntry = null;
   var _currentPage = 0;
   var PAGE_SIZE = 20;
@@ -749,12 +751,30 @@
     renderPhotoWall(_entries);
   }
 
+  function shufflePhotos() {
+    var total = 0;
+    for (var i = 0; i < _entries.length; i++) {
+      if (_entries[i].photoPaths) total += _entries[i].photoPaths.length;
+    }
+    if (total === 0) return;
+    var indices = [];
+    for (var i = 0; i < total; i++) indices.push(i);
+    for (var i = indices.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+    }
+    _photoShuffle = indices;
+    renderPhotoWall(_entries);
+  }
+  window.shufflePhotos = shufflePhotos;
+
   async function renderPhotoWall(entries) {
     var leftWall = document.getElementById('photo-wall-left');
     var rightWall = document.getElementById('photo-wall-right');
     var leftTrack = document.getElementById('photo-wall-track-left');
     var rightTrack = document.getElementById('photo-wall-track-right');
-    if (!leftWall || !rightWall || !leftTrack || !rightTrack) return;
+    var carouselTrack = document.getElementById('photo-carousel-track');
+    if (!leftWall || !rightWall || !leftTrack || !rightTrack || !carouselTrack) return;
 
     var photos = [];
     for (var i = 0; i < entries.length; i++) {
@@ -768,24 +788,40 @@
     if (photos.length === 0) {
       leftWall.style.display = 'none';
       rightWall.style.display = 'none';
+      carouselTrack.innerHTML = '';
       return;
+    }
+
+    if (_photoShuffle && _photoShuffle.length === photos.length) {
+      photos = _photoShuffle.map(function(idx) { return photos[idx]; });
+    } else {
+      _photoShuffle = null;
     }
 
     var leftHtml = '';
     var rightHtml = '';
+    var carouselHtml = '';
 
     for (var k = 0; k < photos.length; k++) {
       var p = photos[k];
-      var url = await getPhotoUrl(p.path);
+      var url = _photoUrlCache[p.path] || await getPhotoUrl(p.path);
       if (!url) continue;
+      _photoUrlCache[p.path] = url;
       var author = typeof getFamilyIdentity === 'function' ? getFamilyIdentity(p.phone) : '';
       var timeSource = p.updatedAt || p.createdAt;
       var timeStr = (timeSource && typeof formatEditorTime === 'function') ? formatEditorTime(timeSource) : '';
-      var item = '<div class="photo-wall-item" onclick="zoomPhoto(\'' + url.replace(/'/g, "\\'") + '\',\'' + escapeHtml(author).replace(/'/g, "\\'") + '\',\'' + timeStr + '\')">' +
+      var escapedUrl = url.replace(/'/g, "\\'");
+      var escapedAuthor = escapeHtml(author).replace(/'/g, "\\'");
+      var item = '<div class="photo-wall-item" onclick="zoomPhoto(\'' + escapedUrl + '\',\'' + escapedAuthor + '\',\'' + timeStr + '\')">' +
         '<img class="photo-wall-thumb" src="' + url + '" loading="lazy" alt="日记照片">' +
         '<div class="photo-wall-meta"><span class="photo-wall-author">' + escapeHtml(author) + '</span> ' + timeStr + '</div>' +
       '</div>';
       if (k % 2 === 0) { leftHtml += item; } else { rightHtml += item; }
+
+      carouselHtml += '<div class="photo-carousel-item" onclick="zoomPhoto(\'' + escapedUrl + '\',\'' + escapedAuthor + '\',\'' + timeStr + '\')">' +
+        '<img src="' + url + '" loading="lazy" alt="日记照片">' +
+        '<div class="photo-carousel-meta"><span class="photo-carousel-author">' + escapeHtml(author) + '</span> ' + timeStr + '</div>' +
+      '</div>';
     }
 
     if (!leftHtml && !rightHtml) {
@@ -797,6 +833,7 @@
     // Duplicate for seamless loop
     if (leftHtml) { leftTrack.innerHTML = leftHtml + leftHtml; leftWall.style.display = ''; }
     if (rightHtml) { rightTrack.innerHTML = rightHtml + rightHtml; rightWall.style.display = ''; }
+    carouselTrack.innerHTML = carouselHtml + carouselHtml;
   }
 
   function createEntryCard(entry) {

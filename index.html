@@ -538,13 +538,16 @@
             }
         }
         /* Bullet screen */
-        .bullet-screen { width: 100%; overflow: hidden; white-space: nowrap; padding: 8px 0; margin-top: 20px; }
-        .bullet-track { display: inline-block; animation: bulletScroll 60s linear infinite; font-size: 0.85rem; }
+        .bullet-screen { width: 100%; overflow: hidden; padding: 4px 0; margin-top: 20px; display: flex; flex-direction: column; gap: 4px; }
+        .bullet-track { display: inline-block; font-size: 0.85rem; white-space: nowrap; }
+        .bullet-track-ltr { animation: bulletScroll 60s linear infinite; }
+        .bullet-track-rtl { animation: bulletScrollReverse 60s linear infinite; }
         .bullet-item { display: inline-block; margin: 0 4px; padding: 4px 12px; border-radius: 12px; background: rgba(255,255,255,0.7); }
         .bullet-checked { color: #2e7d32; }
         .bullet-expiring { color: #f57f17; }
         .bullet-expired { color: #c62828; }
         @keyframes bulletScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes bulletScrollReverse { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
     </style>
 </head>
 <body>

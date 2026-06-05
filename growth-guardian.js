@@ -1572,45 +1572,59 @@
     var editorInfo = JSON.parse(localStorage.getItem('gg_editor_info') || '{}');
 
     window.fetchBabyStatus(allIds).then(function(statuses) {
-      var html = '<div class="bullet-screen"><div class="bullet-track">';
-      var entries = [];
+      var checkedEntries = [];
+      var expiringEntries = [];
+      var expiredEntries = [];
+
+      function validItem(item) {
+        return item && item.title && !/undefined/i.test(item.title) && !/undefined/i.test(item.suggestedTime || '') && !/undefined/i.test(item.time || '');
+      }
 
       // Show checked milestones
       checkedItems.forEach(function(id) {
         var item = findMilestoneById(id);
-        if (!item) return;
+        if (!validItem(item)) return;
         var info = editorInfo[id];
         var person = info && info.phone
           ? (typeof getFamilyIdentity === 'function' ? getFamilyIdentity(info.phone) : info.phone)
           : '';
+        if (/undefined/i.test(person)) person = '';
         var checkTime = info && info.updated_at
           ? info.updated_at.slice(0, 10)
           : '';
         var st = statuses[id] || 'checked';
-        var cls = 'bullet-item bullet-' + st;
-        var label = item.title + ' (📅 ' + (item.suggestedTime || '') + ' ⏰ ' + (item.time || '') + ')';
+        var label = item.title + ' (📅 ' + item.suggestedTime + ' ⏰ ' + item.time + ')';
         if (person) label += ' - ' + person;
         if (checkTime) label += ' - ' + checkTime;
-        entries.push('<span class="' + cls + '">' + label + '</span>');
+        var target = st === 'expiring' ? expiringEntries : st === 'expired' ? expiredEntries : checkedEntries;
+        target.push('<span class="bullet-item bullet-' + st + '">' + label + '</span>');
       });
 
-      // Show expiring / expired milestones (not yet checked)
       for (var id in statuses) {
         if (checkedItems.indexOf(id) !== -1) continue;
         var st = statuses[id];
         if (st !== 'expiring' && st !== 'expired') continue;
         var item = findMilestoneById(id);
-        if (!item) continue;
-        var cls = 'bullet-item bullet-' + st;
-        var label = item.title + ' (📅 ' + (item.suggestedTime || '') + ' ⏰ ' + (item.time || '') + ')';
-        entries.push('<span class="' + cls + '">' + label + '</span>');
+        if (!validItem(item)) continue;
+        var label = item.title + ' (📅 ' + item.suggestedTime + ' ⏰ ' + item.time + ')';
+        var target = st === 'expiring' ? expiringEntries : expiredEntries;
+        target.push('<span class="bullet-item bullet-' + st + '">' + label + '</span>');
       }
 
-      if (entries.length === 0) return;
-      // Duplicate entries for seamless loop
-      html += entries.join(' &nbsp;&nbsp;&nbsp; ') + ' &nbsp;&nbsp;&nbsp; ';
-      html += entries.join(' &nbsp;&nbsp;&nbsp; ');
-      html += '</div></div>';
+      function makeTrack(entries, reverse) {
+        if (entries.length === 0) return '';
+        var joined = entries.join(' &nbsp;&nbsp;&nbsp; ');
+        var cls = reverse ? 'bullet-track bullet-track-rtl' : 'bullet-track bullet-track-ltr';
+        return '<div class="' + cls + '">' + joined + ' &nbsp;||&nbsp; ' + joined + '</div>';
+      }
+
+      var html = '<div class="bullet-screen">';
+      html += makeTrack(checkedEntries, false);
+      html += makeTrack(expiringEntries, true);
+      html += makeTrack(expiredEntries, false);
+      html += '</div>';
+
+      if (html === '<div class="bullet-screen"></div>') return;
 
       var existing = hero.querySelector('.bullet-screen');
       if (existing) existing.remove();
