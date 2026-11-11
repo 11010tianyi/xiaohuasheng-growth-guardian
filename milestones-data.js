@@ -87,6 +87,20 @@ var MILESTONES_DATA = {
           {"name": "World Health Organization - BCG vaccine", "url": "https://www.who.int/news-room/fact-sheets/detail/bcg-vaccine"}
         ]},
       {
+        "id": "s01-012",
+        "time": "0-1月",
+        "category": "💉 疫苗接种",
+        "title": "乙肝疫苗第2剂",
+        "desc": "与第1剂间隔至少28天",
+        "suggestedTime": "1月龄",
+        "note": "免费"
+      ,
+        "scientificDetail": "**乙型肝炎疫苗**是预防乙肝病毒感染的最有效手段。我国国家免疫规划采用\"0-1-6月\"三剂接种方案，第2剂应在第1剂后至少间隔28天，通常在满1月龄时接种，而不是2月龄。\n\n完成3剂基础免疫后，95%以上的婴儿可产生保护性抗体。乙型肝炎是可能导致肝硬化、肝癌的严重传染病，新生儿和婴幼儿感染后转为慢性感染的风险高达90%。\n\n**接种须知：**\n1. 与第1剂间隔至少28天，常规安排在1月龄\n2. 发热、急性疾病应暂缓\n3. 第3剂在第2剂后至少间隔2个月（通常在6月龄）",
+        "sources": [
+          {"name": "中国疾病预防控制中心 - 乙肝疫苗", "url": "https://www.chinacdc.cn/jkzt/ymyjz/ymlb/202103/t20210316_231230.html"},
+          {"name": "World Health Organization - Hepatitis B", "url": "https://www.who.int/news-room/fact-sheets/detail/hepatitis-b"}
+        ]},
+      {
         "id": "s01-007",
         "time": "0-1月",
         "category": "📸 成长记录",
@@ -155,18 +169,18 @@ var MILESTONES_DATA = {
           {"name": "AAP - Preventive Pediatric Health Care Schedule", "url": "https://pediatrics.aappublications.org/"}
         ]},
       {
-        "id": "s01-012",
+        "id": "s01-052",
         "time": "2-3月",
-        "category": "💉 疫苗接种",
-        "title": "乙肝疫苗第2剂",
-        "desc": "与第1剂间隔1个月",
-        "suggestedTime": "2月龄",
-        "note": "免费"
+        "category": "🏥 健康医疗",
+        "title": "3月常规体检",
+        "desc": "身长体重头围、体格检查、发育评估和喂养指导",
+        "suggestedTime": "3月龄",
+        "note": "常规随访"
       ,
-        "scientificDetail": "**乙型肝炎疫苗**是预防乙肝病毒感染的最有效手段。我国国家免疫规划采用\"0-1-6月\"三剂接种方案，第2剂应在第1剂后至少间隔28天（通常在1月龄时）接种。\n\n完成3剂基础免疫后，95%以上的婴儿可产生保护性抗体。乙型肝炎是可能导致肝硬化、肝癌的严重传染病，新生儿和婴幼儿感染后转为慢性感染的风险高达90%。\n\n**接种须知：**\n1. 与第1剂间隔至少28天\n2. 发热、急性疾病应暂缓\n3. 第3剂在第2剂后至少间隔2个月（通常在6月龄）",
+        "scientificDetail": "**3月常规体检**是国家基本公共卫生服务里0–6岁儿童健康管理的固定随访，排在新生儿访视、满月健康管理之后，下一次才是6月龄。42天体检多在分娩医院做，不能代替社区或妇幼的这次3月龄随访。\n\n这次检查一般不另设抽血项目，重点是看宝宝满3个月时的生长和发育是否沿着自己的曲线走。\n\n**通常会看的内容：**\n1. 测量身长、体重、头围，画进生长曲线\n2. 体格检查，包括髋关节、心肺和皮肤\n3. 发育评估：抬头、追视、社交微笑、俯卧时的支撑\n4. 喂养和睡眠指导，并核对接下来的接种安排\n\n具体项目以当地妇幼或社区卫生服务中心的当次通知为准。",
         "sources": [
-          {"name": "中国疾病预防控制中心 - 乙肝疫苗", "url": "https://www.chinacdc.cn/jkzt/ymyjz/ymlb/202103/t20210316_231230.html"},
-          {"name": "World Health Organization - Hepatitis B", "url": "https://www.who.int/news-room/fact-sheets/detail/hepatitis-b"}
+          {"name": "中国儿童保健规范 - 0-6岁儿童健康管理", "url": "https://www.nhc.gov.cn/"},
+          {"name": "AAP - Preventive Pediatric Health Care Schedule", "url": "https://pediatrics.aappublications.org/"}
         ]},
       {
         "id": "s01-013",
@@ -205,10 +219,38 @@ var MILESTONES_DATA = {
         "suggestedTime": "2月龄",
         "note": "自费"
       ,
-        "scientificDetail": "**五价轮状病毒减毒活疫苗（RV5）**可预防五种血清型轮状病毒（G1、G2、G3、G4、P[8]）引起的严重腹泻。轮状病毒是全球5岁以下儿童重症腹泻的首要病原，几乎每个儿童在5岁前都会感染轮状病毒。\n\n该疫苗为口服剂型，无注射痛苦。WHO建议将轮状病毒疫苗纳入所有国家免疫规划。我国推荐6周龄后尽早接种第1剂。\n\n**接种方案：**\n1. 第1剂：6-12周龄（最晚不超过14周6天）\n2. 第2剂：与第1剂间隔4-10周\n3. 第3剂：最晚不超过32周龄\n4. 注意：第1剂必须在14周6天前完成",
+        "scientificDetail": "**五价轮状病毒减毒活疫苗（RV5）**可预防五种血清型轮状病毒（G1、G2、G3、G4、P[8]）引起的严重腹泻。轮状病毒是全球5岁以下儿童重症腹泻的首要病原，几乎每个儿童在5岁前都会感染轮状病毒。\n\n该疫苗为口服剂型，无注射痛苦。WHO建议将轮状病毒疫苗纳入所有国家免疫规划。我国推荐6周龄后尽早接种第1剂。\n\n**接种方案（说明书约束 + 社区常见安排）：**\n1. 第1剂：6-12周龄，且不晚于14周6天；社区门诊多排在2月龄\n2. 第2剂：与第1剂间隔4-10周；社区门诊多排在3月龄\n3. 第3剂：仍须间隔4-10周，且不晚于32周龄；社区门诊多排在4月龄\n4. 2、3、4月龄是常见的三剂节奏，不是全国统一到某一天。若间隔或月龄和上面不一致，以接种门诊按说明书排出的日期为准",
         "sources": [
           {"name": "World Health Organization - Rotavirus", "url": "https://www.who.int/news-room/fact-sheets/detail/rotavirus"},
           {"name": "中国疾病预防控制中心 - 轮状病毒腹泻预防", "url": "https://www.chinacdc.cn/jkzt/crb/zl/lsd/"}
+        ]},
+      {
+        "id": "s01-053",
+        "time": "2-3月",
+        "category": "💉 疫苗接种",
+        "title": "五价轮状疫苗第2剂(可选)",
+        "desc": "口服，与第1剂间隔4-10周",
+        "suggestedTime": "3月龄",
+        "note": "自费"
+      ,
+        "scientificDetail": "**五价轮状病毒疫苗第2剂（口服）**接在2月龄第1剂之后。说明书要求每剂间隔4-10周，社区接种门诊通常把这一剂放在3月龄，和第1剂大约隔4周，而不是直接跳到4月龄。\n\n第3剂另计，多排在4月龄，并且必须在32周龄前完成。这里的2、3、4月龄是常见安排；如果宝宝第1剂偏晚，门诊会按4-10周的间隔往后排，不必强行卡在某一个日历日。\n\n**口服接种注意事项：**\n1. 接种前后半小时内避免喂奶，防止呕吐影响疫苗吸收\n2. 口服后少量吐出一般不需要补种\n3. 接种后可能出现轻微腹泻，属正常反应\n4. 严重联合免疫缺陷（SCID）患儿禁忌，有肠套叠病史者慎用",
+        "sources": [
+          {"name": "World Health Organization - Rotavirus vaccines", "url": "https://www.who.int/news-room/fact-sheets/detail/rotavirus"},
+          {"name": "中国疾病预防控制中心 - 轮状病毒感染防治", "url": "https://www.chinacdc.cn/jkzt/crb/zl/lsd/"}
+        ]},
+      {
+        "id": "s01-021",
+        "time": "2-3月",
+        "category": "💉 疫苗接种",
+        "title": "五联疫苗第2剂",
+        "desc": "与第1剂间隔至少1个月",
+        "suggestedTime": "3月龄",
+        "note": "自费"
+      ,
+        "scientificDetail": "**五联疫苗第2剂**用于继续巩固对百日咳、白喉、破伤风、脊髓灰质炎和Hib五种疾病的免疫力。选择五联时，第2剂在第1剂之后至少1个月，常规是3月龄，不是4月龄。4月龄那一剂是第3剂。\n\n五联疫苗中各成分的保护效果已得到广泛验证：脊髓灰质炎灭活疫苗（IPV）的保护效果接近100%；Hib结合疫苗对侵袭性Hib疾病的保护率达95%以上；无细胞百白破（DTaP）对典型百日咳的保护率为84%-89%。\n\n**注意事项：**\n1. 与第1剂间隔至少28天\n2. 如选择五联疫苗，第2剂代替原方案中单独的脊灰疫苗和百白破疫苗\n3. 少数不良反应包括注射部位红肿、烦躁、低热，通常1-2天自行缓解",
+        "sources": [
+          {"name": "中国疾病预防控制中心 - 国家免疫规划", "url": "https://www.chinacdc.cn/jkzt/ymyjz/"},
+          {"name": "World Health Organization - Immunization, Vaccines and Biologicals", "url": "https://www.who.int/teams/immunization-vaccines-biologicals"}
         ]},
       {
         "id": "s01-016",
@@ -269,26 +311,26 @@ var MILESTONES_DATA = {
         "id": "s01-020",
         "time": "4-6月",
         "category": "🏥 健康医疗",
-        "title": "4-6月体检",
+        "title": "6月常规体检",
         "desc": "发育评估、血常规（查贫血）",
-        "suggestedTime": "4-6月龄",
+        "suggestedTime": "6月龄",
         "note": ""
       ,
-        "scientificDetail": "**4-6个月体检**是婴幼儿系统保健管理的关键节点。此时婴儿从母体获取的铁储备已经耗尽，纯母乳喂养的婴儿面临缺铁性贫血的风险显著升高（我国6月龄婴儿贫血患病率约10%-20%）。\n\n血常规检查可及时筛查出缺铁性贫血，避免贫血对大脑发育和认知功能造成不可逆的损伤。同时，发育评估可监测大运动、精细动作、语言和社交能力等里程碑是否达标。\n\n**体检重点项目：**\n1. **生长发育曲线**：身长、体重、头围测量\n2. **血常规**：血红蛋白筛查贫血\n3. **发育筛查**：抬头、翻身、抓握、追视、社交微笑\n4. **喂养指导**：辅食添加时机和方法的宣教",
+        "scientificDetail": "**6月龄常规体检**是国家基本公共卫生儿童健康管理里、3月龄之后的下一次随访，不是单独的“4月龄体检”。此时婴儿从母体获取的铁储备已经耗尽，纯母乳喂养的婴儿面临缺铁性贫血的风险显著升高（我国6月龄婴儿贫血患病率约10%-20%）。\n\n血常规检查可及时筛查出缺铁性贫血，避免贫血对大脑发育和认知功能造成不可逆的损伤。同时，发育评估可监测大运动、精细动作、语言和社交能力等里程碑是否达标。\n\n**体检重点项目：**\n1. **生长发育曲线**：身长、体重、头围测量\n2. **血常规**：血红蛋白筛查贫血\n3. **发育筛查**：抬头、翻身、抓握、追视、社交微笑\n4. **喂养指导**：辅食添加时机和方法的宣教",
         "sources": [
           {"name": "中国疾病预防控制中心 - 儿童营养与贫血", "url": "https://www.chinacdc.cn/jkzt/yyhspws/"},
           {"name": "World Health Organization - Infant and young child feeding", "url": "https://www.who.int/news-room/fact-sheets/detail/infant-and-young-child-feeding"}
         ]},
       {
-        "id": "s01-021",
+        "id": "s01-054",
         "time": "4-6月",
         "category": "💉 疫苗接种",
-        "title": "五联疫苗第2剂",
-        "desc": "按接种本时间",
+        "title": "五联疫苗第3剂",
+        "desc": "完成基础免疫，与第2剂间隔至少1个月",
         "suggestedTime": "4月龄",
-        "note": ""
+        "note": "自费"
       ,
-        "scientificDetail": "**五联疫苗第2剂**用于继续巩固对百日咳、白喉、破伤风、脊髓灰质炎和Hib五种疾病的免疫力。第2剂通常在第1剂之后1个月接种（3月龄），按照标准免疫程序推进基础免疫。\n\n五联疫苗中各成分的保护效果已得到广泛验证：脊髓灰质炎灭活疫苗（IPV）的保护效果接近100%；Hib结合疫苗对侵袭性Hib疾病的保护率达95%以上；无细胞百白破（DTaP）对典型百日咳的保护率为84%-89%。\n\n**注意事项：**\n1. 与第1剂间隔至少28天\n2. 如选择五联疫苗，第2剂代替原方案中单独的脊灰疫苗和百白破疫苗\n3. 少数不良反应包括注射部位红肿、烦躁、低热，通常1-2天自行缓解",
+        "scientificDetail": "**五联疫苗第3剂**完成百日咳、白喉、破伤风、脊髓灰质炎和Hib的基础免疫。选择五联时，基础免疫是2、3、4月龄各1剂，这一剂是第3剂，不是第2剂；18月龄再打加强剂。\n\n若没有选择五联，国家免疫规划的对应免费程序是：脊灰在2、3、4月龄，百白破在3、4、5月龄。两条路径不要重复接种同一种成分，以接种本上的实际方案为准。\n\n**注意事项：**\n1. 与第2剂间隔至少28天\n2. 少数不良反应包括注射部位红肿、烦躁、低热，通常1-2天自行缓解\n3. 加强剂不在这一剂，安排在18月龄",
         "sources": [
           {"name": "中国疾病预防控制中心 - 国家免疫规划", "url": "https://www.chinacdc.cn/jkzt/ymyjz/"},
           {"name": "World Health Organization - Immunization, Vaccines and Biologicals", "url": "https://www.who.int/teams/immunization-vaccines-biologicals"}
@@ -308,15 +350,29 @@ var MILESTONES_DATA = {
           {"name": "American Academy of Pediatrics - Pneumococcal Vaccines", "url": "https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/Pneumococcal-Vaccines-What-Parents-Need-to-Know.aspx"}
         ]},
       {
+        "id": "s01-055",
+        "time": "4-6月",
+        "category": "💉 疫苗接种",
+        "title": "13价肺炎疫苗第3剂",
+        "desc": "基础免疫的第3剂，不是4月龄那一剂",
+        "suggestedTime": "6月龄",
+        "note": "自费"
+      ,
+        "scientificDetail": "**13价肺炎球菌多糖结合疫苗（PCV13）第3剂**完成婴儿期基础免疫。国内常用的3+1程序是2月龄、4月龄、6月龄各1剂，12-15月龄再加强1剂。6月龄这一剂是第3剂；4月龄已经是第2剂，不要把4月龄记成第3剂。\n\n剂次间隔一般不少于4周。12-15月龄的加强剂不在0-1岁这一格里，到一岁前后再按接种本安排。\n\n**接种时程参考：**\n- 第1剂：2月龄\n- 第2剂：4月龄\n- 第3剂：6月龄\n- 加强剂：12-15月龄",
+        "sources": [
+          {"name": "World Health Organization - Pneumococcal conjugate vaccines", "url": "https://www.who.int/news-room/fact-sheets/detail/pneumococcal-disease"},
+          {"name": "American Academy of Pediatrics - Pneumococcal Vaccines", "url": "https://www.healthychildren.org/English/safety-prevention/immunizations/Pages/Pneumococcal-Vaccines-What-Parents-Need-to-Know.aspx"}
+        ]},
+      {
         "id": "s01-023",
         "time": "4-6月",
         "category": "💉 疫苗接种",
-        "title": "五价轮状疫苗第2剂",
-        "desc": "口服",
+        "title": "五价轮状疫苗第3剂(可选)",
+        "desc": "口服，须在32周龄前完成",
         "suggestedTime": "4月龄",
-        "note": ""
+        "note": "自费"
       ,
-        "scientificDetail": "**五价轮状病毒疫苗第2剂（口服）**继续建立对轮状病毒肠炎的免疫屏障。第2剂通常在第1剂后4-10周接种（约4月龄），必须在32周龄前完成所有3剂接种。\n\n轮状病毒疫苗通过模拟肠道自然感染途径，刺激局部肠道黏膜免疫和全身免疫反应。在轮状病毒高流行地区，疫苗对预防重症轮状病毒胃肠炎的保护效果达80%-90%。\n\n**口服接种注意事项：**\n1. 接种前后半小时内避免喂奶，防止呕吐影响疫苗吸收\n2. 口服后少量吐出一般不需要补种\n3. 接种后可能出现轻微腹泻，属正常反应\n4. 严重联合免疫缺陷（SCID）患儿禁忌，有肠套叠病史者慎用",
+        "scientificDetail": "**五价轮状病毒疫苗第3剂（口服）**完成全程3剂。社区门诊通常把这一剂放在4月龄；它是第3剂，不是第2剂。第2剂在3月龄。三剂都要满足与前一剂间隔4-10周，并且第3剂不晚于32周龄。\n\n如果第1剂接种偏晚，4月龄这一格可能需要改期，以接种门诊按说明书排出的日期为准。\n\n轮状病毒疫苗通过模拟肠道自然感染途径，刺激局部肠道黏膜免疫和全身免疫反应。在轮状病毒高流行地区，疫苗对预防重症轮状病毒胃肠炎的保护效果达80%-90%。\n\n**口服接种注意事项：**\n1. 接种前后半小时内避免喂奶，防止呕吐影响疫苗吸收\n2. 口服后少量吐出一般不需要补种\n3. 接种后可能出现轻微腹泻，属正常反应\n4. 严重联合免疫缺陷（SCID）患儿禁忌，有肠套叠病史者慎用",
         "sources": [
           {"name": "World Health Organization - Rotavirus vaccines", "url": "https://www.who.int/news-room/fact-sheets/detail/rotavirus"},
           {"name": "中国疾病预防控制中心 - 轮状病毒感染防治", "url": "https://www.chinacdc.cn/jkzt/crb/zl/lsd/"}
@@ -408,19 +464,19 @@ var MILESTONES_DATA = {
         "id": "s01-030",
         "time": "7-9月",
         "category": "🏥 健康医疗",
-        "title": "6-9月体检",
+        "title": "8月常规体检",
         "desc": "发育评估、视力筛查",
-        "suggestedTime": "8月龄左右",
+        "suggestedTime": "8月龄",
         "note": ""
       ,
-        "scientificDetail": "**6-9个月体检**涵盖了大运动（坐、爬）、精细动作（抓取小物）、语言发展和社交情绪等多个维度的评估。中华医学会儿科分会推荐婴儿在6-9月龄进行系统保健检查。\n\n视力筛查在6月龄左右尤为重要，可早期发现斜视、屈光不正、先天性白内障等影响视觉发育的问题。\"视觉发育关键期\"为出生至8岁，而0-2岁是最敏感的窗口，早期干预效果最佳。\n\n**体检重点：**\n1. **生长发育**：身长、体重、头围绘制生长曲线\n2. **贫血筛查**：血常规复查（若4-6月已查可评估干预效果）\n3. **视力筛查**：红光反射检查、角膜映光法\n4. **发育评估**：独坐能力、翻身、抓握、社会反应\n5. **喂养评估**：辅食添加的种类、量和接受情况",
+        "scientificDetail": "**8月龄常规体检**是6月龄随访之后的下一次常规随访，涵盖大运动（坐、爬）、精细动作（抓取小物）、语言发展和社交情绪等评估。国家基本公共卫生儿童健康管理在8月龄安排这次随访，它不代替6月龄那一次。\n\n视力筛查在6月龄左右尤为重要，可早期发现斜视、屈光不正、先天性白内障等影响视觉发育的问题。\"视觉发育关键期\"为出生至8岁，而0-2岁是最敏感的窗口，早期干预效果最佳。\n\n**体检重点：**\n1. **生长发育**：身长、体重、头围绘制生长曲线\n2. **贫血筛查**：血常规复查（若6月龄已查，可看干预效果）\n3. **视力筛查**：红光反射检查、角膜映光法\n4. **发育评估**：独坐能力、翻身、抓握、社会反应\n5. **喂养评估**：辅食添加的种类、量和接受情况",
         "sources": [
           {"name": "American Academy of Pediatrics - AAP Schedule of Well-Child Care Visits", "url": "https://www.healthychildren.org/English/family-life/health-management/Pages/Well-Child-Care-A-Check-Up-for-Success.aspx"},
           {"name": "中国儿童保健杂志 - 婴幼儿系统保健管理指南", "url": "https://www.chinacdc.cn/"}
         ]},
       {
         "id": "s01-031",
-        "time": "7-9月",
+        "time": "4-6月",
         "category": "💉 疫苗接种",
         "title": "乙肝疫苗第3剂",
         "desc": "完成基础免疫",
@@ -434,7 +490,7 @@ var MILESTONES_DATA = {
         ]},
       {
         "id": "s01-032",
-        "time": "7-9月",
+        "time": "4-6月",
         "category": "💉 疫苗接种",
         "title": "A群流脑疫苗第1剂",
         "desc": "预防流脑",
@@ -448,7 +504,7 @@ var MILESTONES_DATA = {
         ]},
       {
         "id": "s01-033",
-        "time": "7-9月",
+        "time": "4-6月",
         "category": "💉 疫苗接种",
         "title": "手足口疫苗第1剂(可选)",
         "desc": "预防EV71手足口病",
@@ -462,7 +518,7 @@ var MILESTONES_DATA = {
         ]},
       {
         "id": "s01-034",
-        "time": "7-9月",
+        "time": "4-6月",
         "category": "💉 疫苗接种",
         "title": "流感疫苗(可选)",
         "desc": "每年接种，6月龄起",
@@ -559,8 +615,22 @@ var MILESTONES_DATA = {
           {"name": "American Academy of Pediatrics - 12 Month Well-Child Visit", "url": "https://www.healthychildren.org/English/ages-stages/baby/Pages/Well-Child-Visits.aspx"}
         ]},
       {
+        "id": "s01-056",
+        "time": "7-9月",
+        "category": "💉 疫苗接种",
+        "title": "A群流脑疫苗第2剂",
+        "desc": "与第1剂间隔至少3个月",
+        "suggestedTime": "9月龄",
+        "note": "免费"
+      ,
+        "scientificDetail": "**A群流脑多糖疫苗第2剂**完成A群流脑的基础免疫。国家免疫规划是6月龄第1剂、9月龄第2剂，两剂至少间隔3个月。9月龄这一剂是第2剂，不要和6月龄的第1剂合成一次打勾。\n\n3周岁和6周岁还会换成A+C群流脑多糖疫苗各1剂，那是另一条加强程序，不在0-1岁这一剂里。\n\n**接种时注意：**\n1. 发热或急性疾病先暂缓\n2. 这一剂仍然只覆盖A群，C群要等到3岁的A+C疫苗\n3. 接种后少数会有局部红肿或低热",
+        "sources": [
+          {"name": "中国疾病预防控制中心 - 流行性脑脊髓膜炎防控", "url": "https://www.chinacdc.cn/jkzt/crb/zl/lxn/"},
+          {"name": "World Health Organization - Meningococcal meningitis", "url": "https://www.who.int/news-room/fact-sheets/detail/meningococcal-meningitis"}
+        ]},
+      {
         "id": "s01-041",
-        "time": "10-12月",
+        "time": "7-9月",
         "category": "💉 疫苗接种",
         "title": "麻腮风疫苗第1剂",
         "desc": "麻疹、腮腺炎、风疹联合疫苗",
@@ -574,7 +644,7 @@ var MILESTONES_DATA = {
         ]},
       {
         "id": "s01-042",
-        "time": "10-12月",
+        "time": "7-9月",
         "category": "💉 疫苗接种",
         "title": "乙脑减毒疫苗第1剂",
         "desc": "预防乙型脑炎",
@@ -588,7 +658,7 @@ var MILESTONES_DATA = {
         ]},
       {
         "id": "s01-043",
-        "time": "10-12月",
+        "time": "7-9月",
         "category": "💉 疫苗接种",
         "title": "手足口疫苗第2剂",
         "desc": "完成基础免疫",
@@ -1760,20 +1830,6 @@ var MILESTONES_DATA = {
           {"name": "中国疾病预防控制中心 - 儿童入园体检指南", "url": "https://www.chinacdc.cn/jkzt/yc/jb/"}
         ]},
       {
-        "id": "s04-006",
-        "time": "入园1-2月",
-        "category": "💉 疫苗接种",
-        "title": "流脑A+C疫苗第2剂",
-        "desc": "加强免疫",
-        "suggestedTime": "4周岁",
-        "note": "免费"
-      ,
-        "scientificDetail": "**A群C群脑膜炎球菌多糖疫苗**（简称流脑A+C疫苗）是预防A群和C群脑膜炎奈瑟菌引起的流行性脑脊髓膜炎的疫苗。我国国家免疫规划规定，儿童在3周岁和6周岁各接种1剂流脑A+C疫苗，第1剂在3岁时接种，第2剂在6岁时接种。\n\n**疫苗信息：**\n| 项目 | 内容 |\n|------|------|\n| 疫苗类型 | 多糖疫苗（多糖抗原，T细胞非依赖） |\n| 接种方式 | 上臂三角肌皮下注射 |\n| 保护效果 | 对A群和C群流脑的保护率约85%-95% |\n| 常见反应 | 注射部位红肿、低热（约5%-10%） |\n\n流脑发病急骤、病死率高（约10%-15%），幸存者中10%-20%留有永久性后遗症（耳聋、智力障碍、截肢）。接种疫苗是保护儿童免受流脑侵害的最有效措施。",
-        "sources": [
-          {"name": "中国疾病预防控制中心 - 流脑疫苗免疫程序", "url": "https://www.chinacdc.cn/jkzt/ymyjz/ymlb/202104/t20210406_231019.html"},
-          {"name": "World Health Organization - Meningococcal disease", "url": "https://www.who.int/news-room/fact-sheets/detail/meningococcal-meningitis"}
-        ]},
-      {
         "id": "s04-007",
         "time": "入园1-2月",
         "category": "💉 疫苗接种",
@@ -2501,12 +2557,12 @@ var MILESTONES_DATA = {
         "id": "s06-014",
         "time": "大班下学期",
         "category": "💉 疫苗接种",
-        "title": "流脑A+C疫苗第3剂",
+        "title": "流脑A+C疫苗第2剂",
         "desc": "加强免疫",
         "suggestedTime": "6周岁",
         "note": "免费"
       ,
-        "scientificDetail": "**A群C群脑膜炎球菌多糖疫苗（流脑A+C疫苗）第3剂**是6周岁时接种的加强免疫。流脑（流行性脑脊髓膜炎）是一种由脑膜炎球菌引起的严重传染病，进展迅速，可致死亡或严重后遗症。\n\n**我国流脑疫苗接种方案：**\n| 接种时间 | 疫苗种类 | 作用 |\n|----------|---------|------|\n| 6月龄 | A群流脑多糖第1剂 | 基础免疫 |\n| 9月龄 | A群流脑多糖第2剂 | 基础免疫 |\n| 3周岁 | A+C群流脑多糖第1剂 | 扩大保护至C群 |\n| **6周岁** | **A+C群流脑多糖第2剂** | **加强免疫** |\n\n第3剂（6岁）的目的是在小学入学前加强保护水平。学校环境人员密集、通风可能性有限，流脑的传播风险增加。完成加强接种后可获得至少3-5年的有效保护。\n\n**接种建议：**\n1. 这是国家免费疫苗，按时完成接种\n2. 如有发热或急性感染应暂缓\n3. A+C群流脑多糖疫苗不能预防B群和Y群流脑（自费的四价流脑疫苗能覆盖更多血清群）",
+        "scientificDetail": "**A群C群脑膜炎球菌多糖疫苗（流脑A+C疫苗）第2剂**是6周岁时接种的加强免疫。A+C只有两剂：3周岁第1剂，6周岁第2剂。不要把它写成第3剂，也不要提前到4岁。流脑（流行性脑脊髓膜炎）是一种由脑膜炎球菌引起的严重传染病，进展迅速，可致死亡或严重后遗症。\n\n**我国流脑疫苗接种方案：**\n| 接种时间 | 疫苗种类 | 作用 |\n|----------|---------|------|\n| 6月龄 | A群流脑多糖第1剂 | 基础免疫 |\n| 9月龄 | A群流脑多糖第2剂 | 基础免疫 |\n| 3周岁 | A+C群流脑多糖第1剂 | 扩大保护至C群 |\n| **6周岁** | **A+C群流脑多糖第2剂** | **加强免疫** |\n\n6周岁这一剂（A+C第2剂）的目的是在小学入学前加强保护水平。学校环境人员密集、通风可能性有限，流脑的传播风险增加。完成加强接种后可获得至少3-5年的有效保护。\n\n**接种建议：**\n1. 这是国家免费疫苗，按时完成接种\n2. 如有发热或急性感染应暂缓\n3. A+C群流脑多糖疫苗不能预防B群和Y群流脑（自费的四价流脑疫苗能覆盖更多血清群）",
         "sources": [
           {"name": "中国疾病预防控制中心 - 流行性脑脊髓膜炎疫苗免疫程序", "url": "https://www.chinacdc.cn/jkzt/ymyjz/ymlb/202103/t20210316_231230.html"},
           {"name": "World Health Organization - Meningococcal Vaccines", "url": "https://www.who.int/news-room/fact-sheets/detail/meningococcal-meningitis"}
@@ -2516,11 +2572,11 @@ var MILESTONES_DATA = {
         "time": "大班下学期",
         "category": "🏫 幼小衔接",
         "title": "小学报名",
-        "desc": "关注学区政策，准备材料",
-        "suggestedTime": "3-5月",
+        "desc": "多数城市在5-6月采集信息、审核材料；以当地教育局当年通知为准",
+        "suggestedTime": "5-6月（各地不同）",
         "note": "重要事项"
       ,
-        "scientificDetail": "**小学报名**是幼儿入学的法定程序，各地政策因学区划分、户籍要求、招生时间等存在差异。提前了解政策、准备材料、确认时间节点，是顺利入学的基本保障。\n\n**通用报名流程和时间线：**\n| 时间 | 事项 |\n|------|------|\n| 前一年底至年初 | 关注当地教育局招生政策发布 |\n| 3-4月 | 学区确认、入学信息采集（网上登记） |\n| 5-6月 | 现场材料审核、报名确认 |\n| 7-8月 | 发放录取通知书、新生报到 |\n| 8月下旬 | 分班、入学前家访/家长会 |\n\n**一般所需材料：** 户口本、房产证（或租赁合同）、出生医学证明、预防接种证（入学前必须完成国家免疫规划疫苗）、儿童身份证（部分地区需要）。\n\n各地公办小学招生实行\"就近入学、划片招生\"政策。部分城市实行\"六年一学位\"（一套房产6年内只有一个入学名额，多胞胎除外），购房时需特别注意。\n\n建议提前加入目标小学的招生咨询群或关注教育局官方公众号，获取最新的招生通知。",
+        "scientificDetail": "**小学报名**是幼儿入学的法定程序。公办小学实行免试就近入学，但信息采集和报名没有全国统一的“3-5月”窗口，月份由各区县当年公布。\n\n**常见准备节奏（供对照，不是统一截止日期）：**\n| 时间 | 事项 |\n|------|------|\n| 大班上学期起 | 核对户籍、住房和学区，补齐预防接种证等材料 |\n| 当年春季，多在4月前后 | 教育局发布当年招生政策，先看官方通知，不必把政策发布当成已经报名 |\n| 5-6月 | 多数大城市的网上信息采集、报名和材料审核集中在这一段 |\n| 6-7月 | 录取、注册或发放通知书；有的地市会排到7月 |\n| 8月 | 分班、报到、入学前家长会 |\n\n卡片上的“5-6月”只标出多数大城市比较常用的办理窗口。也有城市更早发布政策，或把信息采集放到6月底至7月。以当地教育局当年的官方通知为准，不要按一个固定的3-5月去准备。\n\n**一般所需材料：** 户口本、房产证（或租赁合同）、出生医学证明、预防接种证（入学前必须完成国家免疫规划疫苗）、儿童身份证（部分地区需要）。\n\n各地公办小学招生实行\"就近入学、划片招生\"政策。部分城市实行\"六年一学位\"（一套房产6年内只有一个入学名额，多胞胎除外），购房时需特别注意。\n\n建议提前加入目标小学的招生咨询群或关注教育局官方公众号，获取最新的招生通知。",
         "sources": [
           {"name": "中华人民共和国义务教育法（2018年修正）", "url": "https://www.gov.cn/guoqing/2021-10/29/content_5647622.htm"},
           {"name": "中国教育部 - 中小学招生入学工作通知", "url": "https://www.moe.gov.cn/jyb_xxgk/zdgkxx_jyzd/jyzd_xgzc/202304/t20230428_105670_1.html"}
@@ -3717,12 +3773,12 @@ var MILESTONES_DATA = {
       {
         "id": "v-004",
         "age": "2月龄",
-        "name": "脊灰疫苗(减毒)",
+        "name": "脊灰灭活疫苗(IPV)",
         "dose": "第1剂",
         "time": "2月龄",
         "cost": "免费",
         "importance": "必打",
-        "note": ""
+        "note": "注射。第1剂不是减毒糖丸"
       },
       {
         "id": "v-005",
@@ -3757,12 +3813,12 @@ var MILESTONES_DATA = {
       {
         "id": "v-008",
         "age": "3月龄",
-        "name": "脊灰疫苗",
+        "name": "脊灰灭活疫苗(IPV)",
         "dose": "第2剂",
         "time": "3月龄",
         "cost": "免费",
         "importance": "必打",
-        "note": ""
+        "note": "注射"
       },
       {
         "id": "v-009",
@@ -3785,11 +3841,21 @@ var MILESTONES_DATA = {
         "note": ""
       },
       {
-        "id": "v-011",
+        "id": "v-038",
         "age": "3月龄",
-        "name": "13价肺炎疫苗(如接种)",
+        "name": "五价轮状疫苗(如接种)",
         "dose": "第2剂",
         "time": "3月龄",
+        "cost": "自费",
+        "importance": "推荐",
+        "note": "口服。与第1剂间隔4-10周，常见安排在3月龄"
+      },
+      {
+        "id": "v-011",
+        "age": "4月龄",
+        "name": "13价肺炎疫苗(如接种)",
+        "dose": "第2剂",
+        "time": "4月龄",
         "cost": "自费",
         "importance": "推荐",
         "note": ""
@@ -3797,12 +3863,12 @@ var MILESTONES_DATA = {
       {
         "id": "v-012",
         "age": "4月龄",
-        "name": "脊灰疫苗",
+        "name": "脊灰减毒疫苗(bOPV)",
         "dose": "第3剂",
         "time": "4月龄",
         "cost": "免费",
         "importance": "必打",
-        "note": ""
+        "note": "口服"
       },
       {
         "id": "v-013",
@@ -3825,20 +3891,10 @@ var MILESTONES_DATA = {
         "note": ""
       },
       {
-        "id": "v-015",
-        "age": "4月龄",
-        "name": "13价肺炎疫苗(如接种)",
-        "dose": "第3剂",
-        "time": "4月龄",
-        "cost": "自费",
-        "importance": "推荐",
-        "note": ""
-      },
-      {
         "id": "v-016",
         "age": "4月龄",
         "name": "五价轮状疫苗(如接种)",
-        "dose": "第2剂",
+        "dose": "第3剂",
         "time": "4月龄",
         "cost": "自费",
         "importance": "推荐",
@@ -3863,6 +3919,16 @@ var MILESTONES_DATA = {
         "cost": "免费",
         "importance": "必打",
         "note": ""
+      },
+      {
+        "id": "v-015",
+        "age": "6月龄",
+        "name": "13价肺炎疫苗(如接种)",
+        "dose": "第3剂",
+        "time": "6月龄",
+        "cost": "自费",
+        "importance": "推荐",
+        "note": "2、4、6月龄程序里的第3剂，不是4月龄"
       },
       {
         "id": "v-019",
@@ -3893,6 +3959,16 @@ var MILESTONES_DATA = {
         "cost": "自费",
         "importance": "推荐",
         "note": "建议每年接种"
+      },
+      {
+        "id": "v-039",
+        "age": "7月龄",
+        "name": "手足口疫苗(如接种)",
+        "dose": "第2剂",
+        "time": "7月龄",
+        "cost": "自费",
+        "importance": "推荐",
+        "note": "与第1剂间隔至少1个月"
       },
       {
         "id": "v-022",
@@ -4017,12 +4093,12 @@ var MILESTONES_DATA = {
       {
         "id": "v-034",
         "age": "4岁",
-        "name": "脊灰疫苗",
+        "name": "脊灰减毒疫苗(bOPV)",
         "dose": "第4剂",
         "time": "4周岁",
         "cost": "免费",
         "importance": "必打",
-        "note": ""
+        "note": "口服"
       },
       {
         "id": "v-035",
